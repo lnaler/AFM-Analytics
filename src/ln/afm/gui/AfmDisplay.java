@@ -53,6 +53,9 @@ import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import net.miginfocom.swing.MigLayout;
 import javafx.scene.paint.*;
+import javafx.scene.shape.Rectangle;
+import javax.swing.border.SoftBevelBorder;
+import javax.swing.UIManager;
 
 public class AfmDisplay{
 	private static final Logger LOGGER = Logger.getLogger(AfmDisplay.class.getName() );
@@ -100,10 +103,12 @@ public class AfmDisplay{
 		frmAfmanalytics.setTitle("AFM-Analytics");
 		frmAfmanalytics.setBounds(100, 100, 900, 650);
 		frmAfmanalytics.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frmAfmanalytics.getContentPane().setLayout(new MigLayout("", "[125.00px:100.00px:125.00px,grow][125.00px:100px][45.00px:120.00px][90.00:80.00][121.00px:87.00px:85.00px,grow][:100px:91.00px,grow][100.00px:61.00px,grow][100px,grow]", "[35,grow][35px,grow][35px][35px][35px][35px][35][][35.00][grow][][][grow]"));
+		frmAfmanalytics.getContentPane().setLayout(new MigLayout("", "[100.00px:100.00px:100.00px][100.00px:100px:100px][100px:100px:100px][100px:100px:100px][100px:100px:100px][100px:100px:100px][100.00px:100px:100px][100px:100px:100px][50px:50px:50px]", "[50px:50px:50px][50px:50px:50px][50px:50px:50px][50px:50px:50px][50px:50px:50px][50px:50px:50px][50px:50px:50px][50px:50px:50px][50px:50px:50px][50px:50px:50px][50px:50px:50px]"));
 		
 		JFXPanel fxPanel = new JFXPanel(); //https://docs.oracle.com/javase/8/javafx/interoperability-tutorial/swing-fx-interoperability.htm
-		frmAfmanalytics.getContentPane().add(fxPanel, "cell 0 1 5 7");
+		fxPanel.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
+		fxPanel.setBackground(Color.WHITE);
+		frmAfmanalytics.getContentPane().add(fxPanel, "cell 0 1 5 6");
 		
 		Platform.runLater(new Runnable() {
             @Override
@@ -113,12 +118,14 @@ public class AfmDisplay{
 		});
 		
 		JScrollPane scrollPane = new JScrollPane();
-		scrollPane.setViewportBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
-		frmAfmanalytics.getContentPane().add(scrollPane, "cell 5 1 3 7,grow");
+		scrollPane.setViewportBorder(new SoftBevelBorder(BevelBorder.LOWERED, null, null, null, null));
+		frmAfmanalytics.getContentPane().add(scrollPane, "cell 5 1 3 6,grow");
 		
 		
 		//test
 		JTextArea log = new JTextArea();
+		log.setEditable(false);
+		log.setForeground(Color.BLACK);
 		scrollPane.setViewportView(log);
 		
 		data = new CurveData(log);
@@ -142,27 +149,27 @@ public class AfmDisplay{
 				//chartPanel.setChart(chart);
 			}
 		});
-		frmAfmanalytics.getContentPane().add(btnRun, "cell 6 8");
+		frmAfmanalytics.getContentPane().add(btnRun, "cell 6 7");
 		
 		JLabel lblSensitivityFactor = new JLabel("Sensitivity Factor");
-		frmAfmanalytics.getContentPane().add(lblSensitivityFactor, "cell 0 9 2 1,alignx right");
+		frmAfmanalytics.getContentPane().add(lblSensitivityFactor, "cell 0 8 2 1,alignx right");
 		
 		sensFactorField = new JTextField();
-		frmAfmanalytics.getContentPane().add(sensFactorField, "cell 2 9,growx");
+		frmAfmanalytics.getContentPane().add(sensFactorField, "cell 2 8,growx");
 		sensFactorField.setColumns(10);
 		
 		JLabel lblnmv = new JLabel("(nm/V)");
-		frmAfmanalytics.getContentPane().add(lblnmv, "cell 3 9,alignx left");
+		frmAfmanalytics.getContentPane().add(lblnmv, "cell 3 8,alignx left");
 		
 		JLabel lblAlpha = new JLabel("Alpha");
-		frmAfmanalytics.getContentPane().add(lblAlpha, "cell 4 9 2 1,alignx right");
+		frmAfmanalytics.getContentPane().add(lblAlpha, "cell 4 8 2 1,alignx right");
 		
 		alphaField = new JTextField();
-		frmAfmanalytics.getContentPane().add(alphaField, "cell 6 9,growx");
+		frmAfmanalytics.getContentPane().add(alphaField, "cell 6 8,growx");
 		alphaField.setColumns(10);
 		
 		JLabel lbldeg = new JLabel("(deg)");
-		frmAfmanalytics.getContentPane().add(lbldeg, "cell 7 9");
+		frmAfmanalytics.getContentPane().add(lbldeg, "cell 7 8");
 		
 //		JTextArea log = new JTextArea();
 //		log.setLineWrap(true);
@@ -173,29 +180,29 @@ public class AfmDisplay{
 		//frame.getContentPane().add(scrollPane, "cell 7 1 1 7,grow");
 		
 		JLabel lblSpringConstant = new JLabel("Spring Constant");
-		frmAfmanalytics.getContentPane().add(lblSpringConstant, "cell 0 10 2 1,alignx right");
+		frmAfmanalytics.getContentPane().add(lblSpringConstant, "cell 0 9 2 1,alignx right");
 		
 		sprConstField = new JTextField();
-		frmAfmanalytics.getContentPane().add(sprConstField, "cell 2 10,growx");
+		frmAfmanalytics.getContentPane().add(sprConstField, "cell 2 9,growx");
 		sprConstField.setColumns(10);
 		
 		JLabel lblnm = new JLabel("(N/m)");
-		frmAfmanalytics.getContentPane().add(lblnm, "cell 3 10");
+		frmAfmanalytics.getContentPane().add(lblnm, "cell 3 9");
 		
 		JLabel lblImpactPointz = new JLabel("Impact Point (Z)");
-		frmAfmanalytics.getContentPane().add(lblImpactPointz, "cell 4 10 2 1,alignx right");
+		frmAfmanalytics.getContentPane().add(lblImpactPointz, "cell 4 9 2 1,alignx right");
 		
 		impactZField = new JTextField();
-		frmAfmanalytics.getContentPane().add(impactZField, "cell 6 10,growx");
+		frmAfmanalytics.getContentPane().add(impactZField, "cell 6 9,growx");
 		impactZField.setColumns(10);
 		
 		JLabel lblnm_1 = new JLabel("(nm)");
-		frmAfmanalytics.getContentPane().add(lblnm_1, "cell 7 10");
+		frmAfmanalytics.getContentPane().add(lblnm_1, "cell 7 9");
 		
 		JTextPane dirPane = new JTextPane();
 		dirPane.setEditable(false);
 		dirPane.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
-		frmAfmanalytics.getContentPane().add(dirPane, "cell 0 12 7 1,growx,aligny center");
+		frmAfmanalytics.getContentPane().add(dirPane, "cell 0 10 7 1,growx,aligny center");
 		
 		JButton btnBrowse = new JButton("Browse");
 		btnBrowse.addMouseListener(new MouseAdapter() {
@@ -224,7 +231,7 @@ public class AfmDisplay{
 				}
 			}
 		});
-		frmAfmanalytics.getContentPane().add(btnBrowse, "cell 7 12");
+		frmAfmanalytics.getContentPane().add(btnBrowse, "cell 7 10");
 		
 	}
 
@@ -260,7 +267,7 @@ public class AfmDisplay{
 
     private static Scene createScene() {
         Group  root  =  new  Group();
-        Scene  scene  =  new  Scene(new ChartDisplay());
+        Scene  scene  =  new  Scene(new ChartDisplay(), 500.0, 500.0);
         Text  text  =  new  Text();
         
         //text.setX(40);
@@ -278,10 +285,17 @@ public class AfmDisplay{
         private ChartViewer chartViewer;
         private Crosshair xCrosshair;
         private Crosshair yCrosshair;
+        private JFreeChart chart;
     
-        public ChartDisplay() {
-            XYDataset dataset = createDataset();
-            JFreeChart chart = createChart(dataset); 
+        public ChartDisplay()
+        {
+        	//Displays basic white box
+        }
+        
+        public ChartDisplay(JFreeChart inChart) {
+            //XYDataset dataset = createDataset();
+            //JFreeChart chart = createChart(dataset); 
+        	chart = inChart;
             this.chartViewer = new ChartViewer(chart);
             this.chartViewer.addChartMouseListener(this);
             getChildren().add(this.chartViewer);
@@ -345,5 +359,14 @@ public class AfmDisplay{
                 "CrosshairOverlayDemo1", "X", "Y", dataset);
         return chart;
     }
-
+    
+    public static Paint toPaint(Color c) //http://stackoverflow.com/questions/30466405/java-convert-java-awt-color-to-javafx-scene-paint-color
+    {
+    	int r = c.getRed();
+    	int g = c.getGreen();
+    	int b = c.getBlue();
+    	int a = c.getAlpha();
+    	double opacity = a / 255.0 ;
+    	return javafx.scene.paint.Color.rgb(r, g, b, opacity);
+    }
 }
