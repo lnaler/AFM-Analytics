@@ -135,37 +135,10 @@ public class AfmDisplay{
 		
 		data = new CurveData(log);
 		
-		JButton btnRun = new JButton("View Data");
-		btnRun.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 24));
-		btnRun.setEnabled(false);
-		btnRun.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseClicked(MouseEvent arg0) {
-				String[] testUnits = {"nm","V"};
-				data.changeUnits(testUnits);
-				data.printData();
-//				PieDataset test = createDataset();
-//				JFreeChart chart = ChartFactory.createPieChart(      
-//				         "Mobile Sales",  // chart title 
-//				         test,        // data    
-//				         true,           // include legend   
-//				         true, 
-//				         false);
-				JFreeChart chart = data.getXYChart();
-				//initFX(fxPanel, createChart(createDataset()));
-				Platform.runLater(new Runnable() { 
-		            @Override
-		            public void run() {
-		                initFX(fxPanel, chart);
-		            }
-				});
-				//chartPanel.setChart(chart);
-			}
-		});
-		
-		JButton btnClearData = new JButton("Clear Data");
+		JButton btnClearData = new JButton("Clear");
+		btnClearData.setEnabled(false);
 		btnClearData.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 24));
-		frmAfmanalytics.getContentPane().add(btnClearData, "cell 0 7");
+		frmAfmanalytics.getContentPane().add(btnClearData, "cell 0 7,growx");
 		btnClearData.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent arg0) {
@@ -178,7 +151,37 @@ public class AfmDisplay{
 				});
 			}
 		});
-		frmAfmanalytics.getContentPane().add(btnRun, "cell 5 7,alignx left");
+		
+		JButton btnView = new JButton("View");
+		btnView.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 24));
+		btnView.setEnabled(false);
+		btnView.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent arg0) {
+				String[] testUnits = {"nm","V"};
+				data.changeUnits(testUnits);
+				data.printData();
+				JFreeChart chart = data.getXYChart();
+				Platform.runLater(new Runnable() { 
+		            @Override
+		            public void run() {
+		                initFX(fxPanel, chart);
+		            }
+				});
+			}
+		});
+		frmAfmanalytics.getContentPane().add(btnView, "cell 1 7,growx");
+		
+		JButton btnRun = new JButton("Run");
+		btnRun.setEnabled(false);
+		frmAfmanalytics.getContentPane().add(btnRun, "cell 5 7,growx");
+		btnRun.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent arg0) {
+				String[] inputs = getInputs();
+				RunAnalysis(data, log, String[] inputs);
+			}
+		});
 		
 		JButton btnClearLog = new JButton("Clear Log");
 		btnClearLog.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 24));
@@ -271,12 +274,20 @@ public class AfmDisplay{
 					e.printStackTrace();
 				   }
 				   log.append("File has been processed successfully." + "\n");
+				   btnView.setEnabled(true);
+				   btnClearData.setEnabled(true);
 				   btnRun.setEnabled(true);
 				}
 			}
 		});
 		frmAfmanalytics.getContentPane().add(btnBrowse, "cell 7 10 3 1,growx");
 		
+	}
+	
+	private String[] getInputs()
+	{
+		String[] result = {sensFactorField.getText(), sprConstField.getText(), alphaField.getText(), impactZField.getText()};
+		return result;
 	}
 
 	private class SwingAction extends AbstractAction {
