@@ -21,6 +21,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
+import javax.swing.SwingUtilities;
 import javax.swing.border.BevelBorder;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -67,7 +68,7 @@ public class AfmDisplay{
 	private JTextField sensFactorField;
 	private JTextField sprConstField;
 	private JTextField alphaField;
-	private JTextField impactZField;
+	private final static JTextField impactZField = new JTextField();
 	private JTextArea log;
 	private File dataFile;
 	private CurveData data;
@@ -101,11 +102,12 @@ public class AfmDisplay{
 	 */
 	private void initialize() {
 		frmAfmanalytics = new JFrame();
+		frmAfmanalytics.getContentPane().setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 22));
 		frmAfmanalytics.setResizable(false);
 		frmAfmanalytics.setTitle("AFM-Analytics");
 		frmAfmanalytics.setBounds(100, 100, 900, 650);
 		frmAfmanalytics.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frmAfmanalytics.getContentPane().setLayout(new MigLayout("", "[100.00px:100.00px:100.00px][100.00px:100px:100px][100px:100px:100px][100px:100px:100px][100px:100px:100px][100px:100px:100px][100.00px:100px:100px][100px:100px:100px][50px:50px:50px]", "[50px:50px:50px][50px:50px:50px][50px:50px:50px][50px:50px:50px][50px:50px:50px][50px:50px:50px][50px:50px:50px][50px:50px:50px][50px:50px:50px][50px:50px:50px][50px:50px:50px]"));
+		frmAfmanalytics.getContentPane().setLayout(new MigLayout("", "[100.00px:100.00px:100.00px][100.00px:100px:100px][100px:100px:100px][100px:100px:100px][100px:100px:100px][100px:100px:100px][100.00px:100px:100px][25px:25px:25px][70px:70px:70px][50px:50px:50px]", "[50px:50px:50px][50px:50px:50px][50px:50px:50px][50px:50px:50px][50px:50px:50px][50px:50px:50px][50px:50px:50px][50px:50px:50px][50px:50px:50px][50px:50px:50px][50px:50px:50px]"));
 		
 		JFXPanel fxPanel = new JFXPanel(); //https://docs.oracle.com/javase/8/javafx/interoperability-tutorial/swing-fx-interoperability.htm
 		fxPanel.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
@@ -121,7 +123,7 @@ public class AfmDisplay{
 		
 		JScrollPane scrollPane = new JScrollPane();
 		scrollPane.setViewportBorder(new SoftBevelBorder(BevelBorder.LOWERED, null, null, null, null));
-		frmAfmanalytics.getContentPane().add(scrollPane, "cell 6 0 3 7,grow");
+		frmAfmanalytics.getContentPane().add(scrollPane, "cell 6 0 4 7,grow");
 		
 		
 		//test
@@ -176,11 +178,11 @@ public class AfmDisplay{
 				});
 			}
 		});
-		frmAfmanalytics.getContentPane().add(btnRun, "cell 5 7,alignx right");
+		frmAfmanalytics.getContentPane().add(btnRun, "cell 5 7,alignx left");
 		
 		JButton btnClearLog = new JButton("Clear Log");
 		btnClearLog.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 24));
-		frmAfmanalytics.getContentPane().add(btnClearLog, "cell 7 7 2 1,alignx right");
+		frmAfmanalytics.getContentPane().add(btnClearLog, "cell 7 7 3 1,alignx right");
 		btnClearLog.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent arg0) {
@@ -189,56 +191,55 @@ public class AfmDisplay{
 		});
 		
 		JLabel lblSensitivityFactor = new JLabel("Sensitivity Factor");
-		lblSensitivityFactor.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 26));
+		lblSensitivityFactor.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 24));
 		frmAfmanalytics.getContentPane().add(lblSensitivityFactor, "cell 0 8 2 1,alignx right");
 		
 		sensFactorField = new JTextField();
-		sensFactorField.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 26));
+		sensFactorField.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 24));
 		frmAfmanalytics.getContentPane().add(sensFactorField, "cell 2 8,growx");
 		sensFactorField.setColumns(10);
 		
 		JLabel lblnmv = new JLabel("(nm/V)");
-		lblnmv.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 24));
+		lblnmv.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 22));
 		frmAfmanalytics.getContentPane().add(lblnmv, "cell 3 8,alignx left");
 		
 		JLabel lblAlpha = new JLabel("Alpha");
-		lblAlpha.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 26));
+		lblAlpha.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 24));
 		frmAfmanalytics.getContentPane().add(lblAlpha, "cell 4 8 2 1,alignx right");
 		
 		alphaField = new JTextField();
-		alphaField.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 26));
-		frmAfmanalytics.getContentPane().add(alphaField, "cell 6 8,growx");
+		alphaField.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 24));
+		frmAfmanalytics.getContentPane().add(alphaField, "cell 6 8 2 1,growx");
 		alphaField.setColumns(10);
 		
 		JLabel lbldeg = new JLabel("(deg)");
-		lbldeg.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 24));
-		frmAfmanalytics.getContentPane().add(lbldeg, "cell 7 8");
+		lbldeg.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 22));
+		frmAfmanalytics.getContentPane().add(lbldeg, "cell 8 8");
 		
 		JLabel lblSpringConstant = new JLabel("Spring Constant");
-		lblSpringConstant.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 26));
+		lblSpringConstant.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 24));
 		frmAfmanalytics.getContentPane().add(lblSpringConstant, "cell 0 9 2 1,alignx right");
 		
 		sprConstField = new JTextField();
-		sprConstField.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 26));
+		sprConstField.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 24));
 		frmAfmanalytics.getContentPane().add(sprConstField, "cell 2 9,growx");
 		sprConstField.setColumns(10);
 		
 		JLabel lblnm = new JLabel("(N/m)");
-		lblnm.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 24));
+		lblnm.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 22));
 		frmAfmanalytics.getContentPane().add(lblnm, "cell 3 9");
 		
 		JLabel lblImpactPointz = new JLabel("Impact Point (Z)");
-		lblImpactPointz.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 26));
+		lblImpactPointz.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 24));
 		frmAfmanalytics.getContentPane().add(lblImpactPointz, "cell 4 9 2 1,alignx right");
 		
-		impactZField = new JTextField();
-		impactZField.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 26));
-		frmAfmanalytics.getContentPane().add(impactZField, "cell 6 9,growx");
+		impactZField.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 24));
+		frmAfmanalytics.getContentPane().add(impactZField, "cell 6 9 2 1,growx");
 		impactZField.setColumns(10);
 		
 		JLabel lblnm_1 = new JLabel("(nm)");
-		lblnm_1.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 24));
-		frmAfmanalytics.getContentPane().add(lblnm_1, "cell 7 9");
+		lblnm_1.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 22));
+		frmAfmanalytics.getContentPane().add(lblnm_1, "cell 8 9");
 		
 		JTextPane dirPane = new JTextPane();
 		dirPane.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 24));
@@ -274,7 +275,7 @@ public class AfmDisplay{
 				}
 			}
 		});
-		frmAfmanalytics.getContentPane().add(btnBrowse, "cell 7 10 2 1,growx");
+		frmAfmanalytics.getContentPane().add(btnBrowse, "cell 7 10 3 1,growx");
 		
 	}
 
@@ -325,7 +326,7 @@ public class AfmDisplay{
         Scene  scene  =  new  Scene(new ChartDisplay(inChart), FXWIDTH, FXHEIGHT);
         return (scene);
     }
-	  
+    
     static class ChartDisplay extends StackPane implements ChartMouseListenerFX { //From JFreeChart CrosshairOverlayFXDemo1
         
         private ChartViewer chartViewer;
@@ -338,6 +339,7 @@ public class AfmDisplay{
         	//Displays basic white box
         }
         
+        
         public ChartDisplay(JFreeChart inChart) {
             //XYDataset dataset = createDataset();
             //JFreeChart chart = createChart(dataset); 
@@ -348,7 +350,7 @@ public class AfmDisplay{
            
             CrosshairOverlayFX crosshairOverlay = new CrosshairOverlayFX();
             this.xCrosshair = new Crosshair(Double.NaN, Color.WHITE, 
-                    new BasicStroke(5f));
+                    new BasicStroke(0f));
             this.xCrosshair.setStroke(new BasicStroke(1.5f, 
                     BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 1, 
                     new float[]{2.0f, 2.0f}, 0));
@@ -369,7 +371,14 @@ public class AfmDisplay{
 
         @Override
         public void chartMouseClicked(ChartMouseEventFX event) {
-            // ignore
+        	double xValue = this.xCrosshair.getValue();
+        	SwingUtilities.invokeLater(new Runnable() {
+        	    @Override
+        	    public void run() {
+        	    	//impactZField.setText("Woo");
+        	    	impactZField.setText(String.format("%,.3f", xValue));
+        	    }
+        	});
         }
 
         @Override
