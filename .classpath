@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/jre1.8.0_121"/>
+	<classpathentry kind="lib" path="miglayout15-swing.jar" sourcepath="miglayout-src.zip"/>
+	<classpathentry kind="lib" path="C:/Users/lbnal/eclipse/workspace/jfreechart-master/jfreechart-master/lib/jcommon-1.0.23.jar"/>
+	<classpathentry kind="lib" path="/jfreechart-master/jfreechart-master/lib/fxgraphics2d-1.5.jar"/>
+	<classpathentry kind="lib" path="/jfreechart-master/jfreechart-master/lib/jfreechart-1.5.0.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
