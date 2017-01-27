@@ -59,6 +59,8 @@ import javax.swing.UIManager;
 
 public class AfmDisplay{
 	private static final Logger LOGGER = Logger.getLogger(AfmDisplay.class.getName() );
+	private static double FXWIDTH = 700d;
+	private static double FXHEIGHT = 600d;
 	
 	private JFrame frmAfmanalytics;
 	private final Action action = new SwingAction();
@@ -108,7 +110,7 @@ public class AfmDisplay{
 		JFXPanel fxPanel = new JFXPanel(); //https://docs.oracle.com/javase/8/javafx/interoperability-tutorial/swing-fx-interoperability.htm
 		fxPanel.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
 		fxPanel.setBackground(Color.WHITE);
-		frmAfmanalytics.getContentPane().add(fxPanel, "cell 0 1 5 6");
+		frmAfmanalytics.getContentPane().add(fxPanel, "flowx,cell 0 0 6 7");
 		
 		Platform.runLater(new Runnable() {
             @Override
@@ -119,11 +121,12 @@ public class AfmDisplay{
 		
 		JScrollPane scrollPane = new JScrollPane();
 		scrollPane.setViewportBorder(new SoftBevelBorder(BevelBorder.LOWERED, null, null, null, null));
-		frmAfmanalytics.getContentPane().add(scrollPane, "cell 5 1 3 6,grow");
+		frmAfmanalytics.getContentPane().add(scrollPane, "cell 6 0 3 7,grow");
 		
 		
 		//test
 		JTextArea log = new JTextArea();
+		log.setFont(new java.awt.Font("Monospaced", java.awt.Font.PLAIN, 18));
 		log.setEditable(false);
 		log.setForeground(Color.BLACK);
 		scrollPane.setViewportView(log);
@@ -131,6 +134,7 @@ public class AfmDisplay{
 		data = new CurveData(log);
 		
 		JButton btnRun = new JButton("View Data");
+		btnRun.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 24));
 		btnRun.setEnabled(false);
 		btnRun.addMouseListener(new MouseAdapter() {
 			@Override
@@ -146,65 +150,104 @@ public class AfmDisplay{
 //				         true, 
 //				         false);
 				JFreeChart chart = data.getXYChart();
+				//initFX(fxPanel, createChart(createDataset()));
+				Platform.runLater(new Runnable() { 
+		            @Override
+		            public void run() {
+		                initFX(fxPanel, chart);
+		            }
+				});
 				//chartPanel.setChart(chart);
 			}
 		});
-		frmAfmanalytics.getContentPane().add(btnRun, "cell 6 7");
+		
+		JButton btnClearData = new JButton("Clear Data");
+		btnClearData.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 24));
+		frmAfmanalytics.getContentPane().add(btnClearData, "cell 0 7");
+		btnClearData.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent arg0) {
+				log.append("Clearing data..." + "\n");
+				Platform.runLater(new Runnable() { 
+		            @Override
+		            public void run() {
+		                initFX(fxPanel);
+		            }
+				});
+			}
+		});
+		frmAfmanalytics.getContentPane().add(btnRun, "cell 5 7,alignx right");
+		
+		JButton btnClearLog = new JButton("Clear Log");
+		btnClearLog.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 24));
+		frmAfmanalytics.getContentPane().add(btnClearLog, "cell 7 7 2 1,alignx right");
+		btnClearLog.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent arg0) {
+				log.setText("");
+			}
+		});
 		
 		JLabel lblSensitivityFactor = new JLabel("Sensitivity Factor");
+		lblSensitivityFactor.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 26));
 		frmAfmanalytics.getContentPane().add(lblSensitivityFactor, "cell 0 8 2 1,alignx right");
 		
 		sensFactorField = new JTextField();
+		sensFactorField.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 26));
 		frmAfmanalytics.getContentPane().add(sensFactorField, "cell 2 8,growx");
 		sensFactorField.setColumns(10);
 		
 		JLabel lblnmv = new JLabel("(nm/V)");
+		lblnmv.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 24));
 		frmAfmanalytics.getContentPane().add(lblnmv, "cell 3 8,alignx left");
 		
 		JLabel lblAlpha = new JLabel("Alpha");
+		lblAlpha.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 26));
 		frmAfmanalytics.getContentPane().add(lblAlpha, "cell 4 8 2 1,alignx right");
 		
 		alphaField = new JTextField();
+		alphaField.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 26));
 		frmAfmanalytics.getContentPane().add(alphaField, "cell 6 8,growx");
 		alphaField.setColumns(10);
 		
 		JLabel lbldeg = new JLabel("(deg)");
+		lbldeg.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 24));
 		frmAfmanalytics.getContentPane().add(lbldeg, "cell 7 8");
 		
-//		JTextArea log = new JTextArea();
-//		log.setLineWrap(true);
-//		log.setEditable(false);
-//		frame.getContentPane().add(log, "flowx,cell 5 1 2 7,grow");
-		
-		//JScrollPane scrollPane = new JScrollPane(log);
-		//frame.getContentPane().add(scrollPane, "cell 7 1 1 7,grow");
-		
 		JLabel lblSpringConstant = new JLabel("Spring Constant");
+		lblSpringConstant.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 26));
 		frmAfmanalytics.getContentPane().add(lblSpringConstant, "cell 0 9 2 1,alignx right");
 		
 		sprConstField = new JTextField();
+		sprConstField.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 26));
 		frmAfmanalytics.getContentPane().add(sprConstField, "cell 2 9,growx");
 		sprConstField.setColumns(10);
 		
 		JLabel lblnm = new JLabel("(N/m)");
+		lblnm.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 24));
 		frmAfmanalytics.getContentPane().add(lblnm, "cell 3 9");
 		
 		JLabel lblImpactPointz = new JLabel("Impact Point (Z)");
+		lblImpactPointz.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 26));
 		frmAfmanalytics.getContentPane().add(lblImpactPointz, "cell 4 9 2 1,alignx right");
 		
 		impactZField = new JTextField();
+		impactZField.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 26));
 		frmAfmanalytics.getContentPane().add(impactZField, "cell 6 9,growx");
 		impactZField.setColumns(10);
 		
 		JLabel lblnm_1 = new JLabel("(nm)");
+		lblnm_1.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 24));
 		frmAfmanalytics.getContentPane().add(lblnm_1, "cell 7 9");
 		
 		JTextPane dirPane = new JTextPane();
+		dirPane.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 24));
 		dirPane.setEditable(false);
 		dirPane.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
 		frmAfmanalytics.getContentPane().add(dirPane, "cell 0 10 7 1,growx,aligny center");
 		
 		JButton btnBrowse = new JButton("Browse");
+		btnBrowse.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 24));
 		btnBrowse.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent arg0) {
@@ -231,7 +274,7 @@ public class AfmDisplay{
 				}
 			}
 		});
-		frmAfmanalytics.getContentPane().add(btnBrowse, "cell 7 10");
+		frmAfmanalytics.getContentPane().add(btnBrowse, "cell 7 10 2 1,growx");
 		
 	}
 
@@ -264,19 +307,22 @@ public class AfmDisplay{
         Scene scene = createScene();
         fxPanel.setScene(scene);
     }
-
+	
+	private static void initFX(JFXPanel fxPanel, JFreeChart inChart) {
+        // This method is invoked on the JavaFX thread
+        Scene scene = createScene(inChart);
+        fxPanel.setScene(scene);
+    }
+	
     private static Scene createScene() {
         Group  root  =  new  Group();
-        Scene  scene  =  new  Scene(new ChartDisplay(), 500.0, 500.0);
-        Text  text  =  new  Text();
-        
-        //text.setX(40);
-        //text.setY(100);
-        //text.setFont(new Font(25));
-        //text.setText("Welcome JavaFX!");
-
-        root.getChildren().add(text);
-
+        Scene  scene  =  new  Scene(new ChartDisplay(), FXWIDTH, FXHEIGHT);
+        return (scene);
+    }
+    
+    private static Scene createScene(JFreeChart inChart){
+    	Group  root  =  new  Group();
+        Scene  scene  =  new  Scene(new ChartDisplay(inChart), FXWIDTH, FXHEIGHT);
         return (scene);
     }
 	  
@@ -301,13 +347,13 @@ public class AfmDisplay{
             getChildren().add(this.chartViewer);
            
             CrosshairOverlayFX crosshairOverlay = new CrosshairOverlayFX();
-            this.xCrosshair = new Crosshair(Double.NaN, Color.GRAY, 
-                    new BasicStroke(0f));
+            this.xCrosshair = new Crosshair(Double.NaN, Color.WHITE, 
+                    new BasicStroke(5f));
             this.xCrosshair.setStroke(new BasicStroke(1.5f, 
                     BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 1, 
                     new float[]{2.0f, 2.0f}, 0));
             this.xCrosshair.setLabelVisible(true);
-            this.yCrosshair = new Crosshair(Double.NaN, Color.GRAY, 
+            this.yCrosshair = new Crosshair(Double.NaN, Color.WHITE, 
                     new BasicStroke(0f));
             this.yCrosshair.setStroke(new BasicStroke(1.5f, 
                     BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 1, 
