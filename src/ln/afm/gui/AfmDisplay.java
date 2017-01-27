@@ -173,13 +173,14 @@ public class AfmDisplay{
 		frmAfmanalytics.getContentPane().add(btnView, "cell 1 7,growx");
 		
 		JButton btnRun = new JButton("Run");
+		btnRun.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 24));
 		btnRun.setEnabled(false);
 		frmAfmanalytics.getContentPane().add(btnRun, "cell 5 7,growx");
 		btnRun.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent arg0) {
 				String[] inputs = getInputs();
-				RunAnalysis(data, log, String[] inputs);
+				RunAnalysis analyst = new RunAnalysis(data, log, inputs);
 			}
 		});
 		
