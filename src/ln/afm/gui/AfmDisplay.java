@@ -242,15 +242,15 @@ public class AfmDisplay{
 		log.append(update);
 	}
 	
-	private static PieDataset createDataset( ) 
-	   {
-	      DefaultPieDataset dataset = new DefaultPieDataset( );
-	      dataset.setValue( "IPhone 5s" , new Double( 20 ) );  
-	      dataset.setValue( "SamSung Grand" , new Double( 20 ) );   
-	      dataset.setValue( "MotoG" , new Double( 40 ) );    
-	      dataset.setValue( "Nokia Lumia" , new Double( 10 ) );  
-	      return dataset;         
-	   }
+//	private static PieDataset createDataset( ) 
+//	   {
+//	      DefaultPieDataset dataset = new DefaultPieDataset( );
+//	      dataset.setValue( "IPhone 5s" , new Double( 20 ) );  
+//	      dataset.setValue( "SamSung Grand" , new Double( 20 ) );   
+//	      dataset.setValue( "MotoG" , new Double( 40 ) );    
+//	      dataset.setValue( "Nokia Lumia" , new Double( 10 ) );  
+//	      return dataset;         
+//	   }
 	
 	private static void initFX(JFXPanel fxPanel) {
         // This method is invoked on the JavaFX thread
@@ -260,32 +260,32 @@ public class AfmDisplay{
 
     private static Scene createScene() {
         Group  root  =  new  Group();
-        Scene  scene  =  new  Scene(root, Color.ALICEBLUE);
+        Scene  scene  =  new  Scene(new MyDemoPane());
         Text  text  =  new  Text();
         
-        text.setX(40);
-        text.setY(100);
-        text.setFont(new Font(25));
-        text.setText("Welcome JavaFX!");
+        //text.setX(40);
+        //text.setY(100);
+        //text.setFont(new Font(25));
+        //text.setText("Welcome JavaFX!");
 
         root.getChildren().add(text);
 
         return (scene);
     }
 	  
-//    static class MyDemoPane extends StackPane implements ChartMouseListenerFX { //From JFreeChart CrosshairOverlayFXDemo1
-//        
-//        private ChartViewer chartViewer;
-//        private Crosshair xCrosshair;
-//        private Crosshair yCrosshair;
-//    
-//        public MyDemoPane() {
-//            XYDataset dataset = createDataset();
-//            JFreeChart chart = createChart(dataset); 
-//            this.chartViewer = new ChartViewer(chart);
+    static class MyDemoPane extends StackPane implements ChartMouseListenerFX { //From JFreeChart CrosshairOverlayFXDemo1
+        
+        private ChartViewer chartViewer;
+        private Crosshair xCrosshair;
+        private Crosshair yCrosshair;
+    
+        public MyDemoPane() {
+            XYDataset dataset = createDataset();
+            JFreeChart chart = createChart(dataset); 
+            this.chartViewer = new ChartViewer(chart);
 //            this.chartViewer.addChartMouseListener(this);
-//            getChildren().add(this.chartViewer);
-//           
+            getChildren().add(this.chartViewer);
+           
 //            CrosshairOverlayFX crosshairOverlay = new CrosshairOverlayFX();
 //            this.xCrosshair = new Crosshair(Double.NaN, Color.GRAY, 
 //                    new BasicStroke(0f));
@@ -301,19 +301,19 @@ public class AfmDisplay{
 //            this.yCrosshair.setLabelVisible(true);
 //            crosshairOverlay.addDomainCrosshair(xCrosshair);
 //            crosshairOverlay.addRangeCrosshair(yCrosshair);
-//            
+            
 //            Platform.runLater(() -> {
 //                this.chartViewer.getCanvas().addOverlay(crosshairOverlay);
 //            });
-//        }
-//
-//        @Override
-//        public void chartMouseClicked(ChartMouseEventFX event) {
-//            // ignore
-//        }
-//
-//        @Override
-//        public void chartMouseMoved(ChartMouseEventFX event) {
+        }
+
+        @Override
+        public void chartMouseClicked(ChartMouseEventFX event) {
+            // ignore
+        }
+
+        @Override
+        public void chartMouseMoved(ChartMouseEventFX event) {
 //            Rectangle2D dataArea = this.chartViewer.getCanvas().getRenderingInfo().getPlotInfo().getDataArea();
 //            JFreeChart chart = event.getChart();
 //            XYPlot plot = (XYPlot) chart.getPlot();
@@ -327,37 +327,23 @@ public class AfmDisplay{
 //            double y = DatasetUtilities.findYValue(plot.getDataset(), 0, x);
 //            this.xCrosshair.setValue(x);
 //            this.yCrosshair.setValue(y);
-//        }
-//        
-//    }
-// 
-//    public static XYDataset createDataset() {
-//        XYSeries series = new XYSeries("S1");
-//        for (int x = 0; x < 10; x++) {
-//            series.add(x, x + Math.random() * 4.0);
-//        }
-//        XYSeriesCollection dataset = new XYSeriesCollection(series);
-//        return dataset;
-//    }
-//
-//    public static JFreeChart createChart(XYDataset dataset) {
-//        JFreeChart chart = ChartFactory.createXYLineChart(
-//                "CrosshairOverlayDemo1", "X", "Y", dataset);
-//        return chart;
-//    }
-//
-//    /**
-//     * Adds a chart viewer to the stage and displays it.
-//     * 
-//     * @param stage  the stage.
-//     * @throws Exception if something goes wrong.
-//     */
-//    public void start(Stage stage) throws Exception {
-//        stage.setScene(new Scene(new MyDemoPane())); 
-//        stage.setTitle("JFreeChart: CrosshairOverlayFXDemo1.java"); 
-//        stage.setWidth(700);
-//        stage.setHeight(390);
-//        stage.show(); 
-//    }
+        }
+        
+    }
+ 
+    public static XYDataset createDataset() {
+        XYSeries series = new XYSeries("S1");
+        for (int x = 0; x < 10; x++) {
+            series.add(x, x + Math.random() * 4.0);
+        }
+        XYSeriesCollection dataset = new XYSeriesCollection(series);
+        return dataset;
+    }
+
+    public static JFreeChart createChart(XYDataset dataset) {
+        JFreeChart chart = ChartFactory.createXYLineChart(
+                "CrosshairOverlayDemo1", "X", "Y", dataset);
+        return chart;
+    }
     
 }
