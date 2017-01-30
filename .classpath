@@ -6,5 +6,15 @@
 	<classpathentry kind="lib" path="C:/Users/lbnal/eclipse/workspace/jfreechart-master/jfreechart-master/lib/jcommon-1.0.23.jar"/>
 	<classpathentry kind="lib" path="/jfreechart-master/jfreechart-master/lib/fxgraphics2d-1.5.jar"/>
 	<classpathentry kind="lib" path="/jfreechart-master/jfreechart-master/lib/jfreechart-1.5.0.jar"/>
+	<classpathentry kind="lib" path="C:/Users/lbnal/eclipse/workspace/ejml-v0.30-libs/EJML-core-0.30.jar"/>
+	<classpathentry kind="lib" path="C:/Users/lbnal/eclipse/workspace/ejml-v0.30-libs/EJML-core-0.30-sources.jar"/>
+	<classpathentry kind="lib" path="C:/Users/lbnal/eclipse/workspace/ejml-v0.30-libs/EJML-dense64-0.30.jar"/>
+	<classpathentry kind="lib" path="C:/Users/lbnal/eclipse/workspace/ejml-v0.30-libs/EJML-dense64-0.30-sources.jar"/>
+	<classpathentry kind="lib" path="C:/Users/lbnal/eclipse/workspace/ejml-v0.30-libs/EJML-denseC64-0.30.jar"/>
+	<classpathentry kind="lib" path="C:/Users/lbnal/eclipse/workspace/ejml-v0.30-libs/EJML-denseC64-0.30-sources.jar"/>
+	<classpathentry kind="lib" path="C:/Users/lbnal/eclipse/workspace/ejml-v0.30-libs/EJML-equation-0.30.jar"/>
+	<classpathentry kind="lib" path="C:/Users/lbnal/eclipse/workspace/ejml-v0.30-libs/EJML-equation-0.30-sources.jar"/>
+	<classpathentry kind="lib" path="C:/Users/lbnal/eclipse/workspace/ejml-v0.30-libs/EJML-simple-0.30.jar"/>
+	<classpathentry kind="lib" path="C:/Users/lbnal/eclipse/workspace/ejml-v0.30-libs/EJML-simple-0.30-sources.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
