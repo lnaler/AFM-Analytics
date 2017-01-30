@@ -165,4 +165,15 @@ public class CurveData {
 		}
 	}
 	
+	public double[][] toArray()
+	{
+		double[][] dataArray = new double[2][zdistValues.size()];
+		for(int i=0;i<zdistValues.size();i++)
+		{
+			dataArray[0][i] = zdistValues.get(i);
+			dataArray[1][i] = voltValues.get(i);
+		}
+		return dataArray;
+	}
+	
 }

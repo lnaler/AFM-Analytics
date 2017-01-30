@@ -104,6 +104,10 @@ public class FileParser {
 //	}
 	
 	public static boolean isDouble(String s) { //http://stackoverflow.com/questions/5439529/determine-if-a-string-is-an-integer-in-java
+		if(s == null)
+		{
+			return false;
+		}
 	    Scanner sc = new Scanner(s.trim());
 	    if(!sc.hasNextDouble())
 	    {
