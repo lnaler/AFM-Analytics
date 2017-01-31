@@ -15,6 +15,10 @@ public class RunAnalysis {
 	private double alpha;
 	private double impactZ;
 	
+	private double poissonsRatio;
+	private double tanAlpha;
+	
+	
 	/**
 	 * Columns are : 	0.Z(nm)		1.D(V)		2.D(nm)		3.Z-Z0(nm)		4.D-D0(nm)		5.D-D0(m) 
 	 * 					6.del(nm)	7.del(m)	8.F(N)		9.ln(del)		10.ln(F)
@@ -28,6 +32,10 @@ public class RunAnalysis {
 		sprConst = inputs[1];
 		alpha = inputs[2];
 		impactZ = inputs[3];
+		
+		poissonsRatio = 0.25;
+		tanAlpha = Math.tan(alpha);
+		
 		log.append("Running: " + sensFactor + " " + sprConst + " " + alpha + " " + impactZ + "\n");
 		initMatrix(data);
 	}
@@ -76,18 +84,79 @@ public class RunAnalysis {
 		double currentTotal = 0;
 		for(int i = firstIndex; i < lastIndex; i++)
 		{
-			currentTotal = currentTotal + dataMatrix.get(i, 0);
+			currentTotal = currentTotal + dataMatrix.get(i, 2);
 		}
 		double avgD0 = currentTotal/4;
 		userLog.append("Average D0 value is: " + avgD0 + "\n");
 		return avgD0;
 	}
 	
+	private void calcDist()
+	{
+		for(int i = 0;i < dataMatrix.numRows;i++)
+		{
+			double temp = dataMatrix.get(i, 1)*sensFactor;
+			dataMatrix.set(i,2,temp);
+		}
+	}
+	
+	private void calcZDiffs()
+	{
+		for(int i = 0;i < dataMatrix.numRows;i++)
+		{
+			double temp = dataMatrix.get(i, 0) - impactZ;
+			dataMatrix.set(i,3,temp);
+		}
+	}
+	
+	private void calcDDiffs()
+	{
+		double avgD0 = getAvgD0();
+		for(int i = 0;i < dataMatrix.numRows;i++)
+		{
+			double temp = dataMatrix.get(i, 2) - avgD0;
+			dataMatrix.set(i,4,temp);
+			dataMatrix.set(i,5,(temp/1000000000));
+		}
+		
+	}
+	
+	private void calcDelta()
+	{
+		for(int i = 0;i < dataMatrix.numRows; i++)
+		{
+			double temp = dataMatrix.get(i, 3) - dataMatrix.get(i,4);
+			dataMatrix.set(i,6,temp);
+			dataMatrix.set(i,7,temp/1000000000);
+			dataMatrix.set(i,9,Math.log(temp/1000000000));
+		}
+	}
+	
+	private void calcForce()
+	{
+		for(int i = 0;i < dataMatrix.numRows; i++)
+		{
+			double temp = dataMatrix.get(i,5)*sprConst;
+			dataMatrix.set(i,8,temp);
+			dataMatrix.set(i,10,Math.log(temp));
+		}
+	}
+	
+	private void calcMatrix()
+	{
+		calcDist();
+		calcZDiffs();
+		calcDDiffs();
+		calcDelta();
+		calcForce();
+		userLog.append("Matrix calculated" + "\n");
+		System.out.println(dataMatrix.toString());
+	}
+	
 	public void run()
 	{
 		userLog.append("Running..." + "\n");
-		//calcMatrix();
-		getAvgD0(); //call in calcMatrix
+		calcMatrix();
 		//FitMatrix()
 		//Save Force Distance Curve (regression overlay?)
 		//Save BestFitLine
