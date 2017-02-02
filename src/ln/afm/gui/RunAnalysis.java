@@ -7,10 +7,12 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
 import org.apache.commons.math3.fitting.WeightedObservedPoint;
+import org.apache.commons.math3.stat.regression.SimpleRegression;
 import org.ejml.data.DenseMatrix32F;
 import org.ejml.data.DenseMatrix64F;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYSeries;
@@ -27,6 +29,13 @@ public class RunAnalysis {
 	
 	private double poissonsRatio;
 	private double tanAlpha;
+	
+	private double minX;
+	private double minY;
+	private double maxX;
+	private double maxY;
+	
+	private SimpleRegression linReg;
 	
 	ArrayList<WeightedObservedPoint> points;
 	
@@ -52,6 +61,12 @@ public class RunAnalysis {
 		
 		log.append("Running: " + sensFactor + " " + sprConst + " " + alpha + " " + impactZ + "\n");
 		initMatrix(data);
+		
+		linReg = new SimpleRegression();
+		minX = 0;
+		minY = 0;
+		maxX = 0;
+		maxY = 0;
 	}
 	
 	private void initMatrix(CurveData data)
@@ -167,22 +182,48 @@ public class RunAnalysis {
 		System.out.println(dataMatrix.toString());
 	}
 	
+	private int getLastNaN(int column) //Finds first number that is not NaN
+	{
+		int currentLast = -1;
+		for(int i=0; i < dataMatrix.numRows; i++)
+		{
+			if(Double.isNaN(dataMatrix.get(i, column)))
+			{
+				currentLast = i;
+			}
+			i++;
+		}
+		return currentLast;
+	}
+	
 	private XYDataset toWeightedMatrix()
 	{
-		int start = getClosest(impactZ,0);
+		int start = getLastNaN(10);
+		if(start == (dataMatrix.numRows - 1))
+		{
+			AfmDisplay.infoBox("All ln(F) are NaN", "ERROR");
+			return new XYSeriesCollection();
+		}
 		double weight = 1;
 		double xval = 0;
 		double yval = 0;
 		
-		XYSeries data = new XYSeries("");
-		for(int i=start;i<dataMatrix.numRows;i++)
+		XYSeries data = new XYSeries("raw");
+		for(int i=start+1;i<dataMatrix.numRows;i++)
 		{
 			xval = dataMatrix.get(i, 7);
 			yval = dataMatrix.get(i, 8);
 			WeightedObservedPoint point = new WeightedObservedPoint(weight, xval, yval);
         	points.add(point);
         	data.add(xval, yval);
+        	linReg.addData(Math.log(xval), Math.log(yval));
 		}
+		
+		minX = data.getMinX();
+		minY = data.getMinY();
+		
+		maxX = data.getMaxX();
+		maxY = data.getMaxY();
 		
 		final XYSeriesCollection dataset = new XYSeriesCollection();          
 	    dataset.addSeries(data);
@@ -199,7 +240,8 @@ public class RunAnalysis {
 	{
 		CurveSolver fitter = new CurveSolver();
 		final double coeffs[] = fitter.fit(points);
-        userLog.append("Slope is: " + coeffs[0]+ "\n");
+        userLog.append("CurveSolver slope is: " + coeffs[0]+ "\n");
+        userLog.append("LinReg Slope: " + linReg.getSlope() + " Int: " + linReg.getIntercept() + "\n");
 	}
 	
 	public JFreeChart getXYChart()
@@ -207,7 +249,7 @@ public class RunAnalysis {
 		String xtitle = "Indentation" + " (m)";
 		String ytitle = "Force" + " (N)";
 		JFreeChart xylineChart = ChartFactory.createXYLineChart(
-		         "Test Title",
+		         "",
 		         xtitle,
 		         ytitle,
 		         toWeightedMatrix(),
@@ -215,6 +257,17 @@ public class RunAnalysis {
 		         false, //include legend
 		         true,
 		         false);
+		
+		double xStep = (maxX - minX)/10;
+		double yStep = (maxY - minY)/10;
+		NumberAxis domain = (NumberAxis) xylineChart.getXYPlot().getDomainAxis();
+        domain.setRange(minX, maxX);
+        //domain.setTickUnit(new NumberTickUnit(0.1));
+        domain.setVerticalTickLabels(true);
+        NumberAxis range = (NumberAxis) xylineChart.getXYPlot().getRangeAxis();
+        range.setRange(minY, maxY);
+        //range.setTickUnit(new NumberTickUnit(0.1));
+		
 		return xylineChart;
 	}
 
@@ -223,6 +276,7 @@ public class RunAnalysis {
 		userLog.append("Running..." + "\n");
 		calcMatrix();
 		JFreeChart forceIndentation = getXYChart();
+		fitMatrix();
 		return forceIndentation;
 		//fitMatrix();
 	}

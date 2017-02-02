@@ -19,7 +19,7 @@ class PowerFunction implements ParametricUnivariateFunction {
         final double a = parameters[0];
 
         return new double[] {
-            2*parameters[0]*x
+            2.0*a*x
         };
     }
 }
@@ -56,9 +56,9 @@ public class CurveSolver extends AbstractCurveFitter {
 //        ArrayList<WeightedObservedPoint> points = new ArrayList<WeightedObservedPoint>();
 //
 //        // Add points here; for instance,
-//        for(int i=0;i < 25;i++)
+//        for(int i=1;i < 25;i++)
 //        {
-//        	WeightedObservedPoint point = new WeightedObservedPoint(1.0,i,1.731*i*i);
+//        	WeightedObservedPoint point = new WeightedObservedPoint(1.0,Math.log(i),(2*Math.log(i)+Math.log(2)));
 //        	points.add(point);
 //        }
 ////        WeightedObservedPoint point = new WeightedObservedPoint(1.0,

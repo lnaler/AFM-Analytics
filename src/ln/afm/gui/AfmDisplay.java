@@ -44,7 +44,9 @@ import org.jfree.data.general.PieDataset;
 import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
+import org.jfree.ui.RectangleAnchor;
 import org.jfree.ui.RectangleEdge;
+import org.jfree.ui.Size2D;
 
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -67,6 +69,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
+import org.jfree.chart.ChartPanel;
 
 public class AfmDisplay{
 	private static final Logger LOGGER = Logger.getLogger(AfmDisplay.class.getName() );
@@ -126,16 +129,15 @@ public class AfmDisplay{
 		
 		frmAfmanalytics = new JFrame();
 		frmAfmanalytics.getContentPane().setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 22));
-		frmAfmanalytics.setResizable(false);
 		frmAfmanalytics.setTitle("AFM-Analytics");
-		frmAfmanalytics.setBounds(100, 100, 900, 650);
+		frmAfmanalytics.setBounds(100, 100, 925, 675);
 		frmAfmanalytics.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frmAfmanalytics.getContentPane().setLayout(new MigLayout("", "[100.00px:100.00px:100.00px][100.00px:100px:100px][100px:100px:100px,grow][100px:100px:100px][100px:100px:100px][100px:100px:100px][100.00px:100px:100px][25px:25px:25px][70px:70px:70px][50px:50px:50px]", "[50px:50px:50px][50px:50px:50px][50px:50px:50px][50px:50px:50px][50px:50px:50px][50px:50px:50px][50px:50px:50px][50px:50px:50px][50px:50px:50px][50px:50px:50px][50px:50px:50px]"));
+		frmAfmanalytics.getContentPane().setLayout(new MigLayout("", "[100.00px:100.00px:100.00px][100.00px:100px:100px][100px:100px:100px,grow][100px:100px:100px][100px:100px:100px][100px:100px:100px][100.00px:100px:100px,grow][25px:25px:25px][70px:70px:70px][50px:50px:50px]", "[50px:50px:50px][50px:50px:50px][50px:50px:50px][50px:50px:50px,grow][50px:50px:50px][50px:50px:50px][50px:50px:50px][50px:50px:50px][50px:50px:50px][50px:50px:50px][50px:50px:50px]"));
 		
 		JFXPanel fxPanel = new JFXPanel(); //https://docs.oracle.com/javase/8/javafx/interoperability-tutorial/swing-fx-interoperability.htm
 		fxPanel.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
 		fxPanel.setBackground(Color.WHITE);
-		frmAfmanalytics.getContentPane().add(fxPanel, "flowx,cell 0 0 6 7");
+		frmAfmanalytics.getContentPane().add(fxPanel, "flowx,cell 0 0 5 7");
 		
 		Platform.runLater(new Runnable() {
             @Override
@@ -146,7 +148,7 @@ public class AfmDisplay{
 		
 		JScrollPane scrollPane = new JScrollPane();
 		scrollPane.setViewportBorder(new SoftBevelBorder(BevelBorder.LOWERED, null, null, null, null));
-		frmAfmanalytics.getContentPane().add(scrollPane, "cell 6 0 4 7,grow");
+		frmAfmanalytics.getContentPane().add(scrollPane, "cell 5 0 5 3,grow");
 		
 		
 		//test
@@ -157,6 +159,11 @@ public class AfmDisplay{
 		scrollPane.setViewportView(log);
 		
 		data = new CurveData(log);
+		
+		ChartPanel chartPanel = new ChartPanel((JFreeChart) null);
+		chartPanel.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
+		chartPanel.setBackground(Color.WHITE);
+		frmAfmanalytics.getContentPane().add(chartPanel, "cell 5 3 5 4,grow");
 		
 		JButton btnClearData = new JButton("Clear");
 		btnClearData.setEnabled(false);
@@ -208,12 +215,7 @@ public class AfmDisplay{
 					double[] inputs = getInputs();
 					RunAnalysis analyst = new RunAnalysis(data, log, inputs);
 					JFreeChart forceInd = analyst.run();
-					Platform.runLater(new Runnable() { 
-			            @Override
-			            public void run() {
-			                initFX(fxPanel, forceInd);
-			            }
-					});
+					chartPanel.setChart(forceInd);
 				}
 				if(!isReady)
 				{
@@ -548,18 +550,19 @@ public class AfmDisplay{
             getChildren().add(this.chartViewer);
            
             CrosshairOverlayFX crosshairOverlay = new CrosshairOverlayFX();
-            this.xCrosshair = new Crosshair(Double.NaN, Color.WHITE, 
+            this.xCrosshair = new Crosshair(Double.NaN, Color.BLACK, 
                     new BasicStroke(0f));
             this.xCrosshair.setStroke(new BasicStroke(1.5f, 
                     BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 1, 
                     new float[]{2.0f, 2.0f}, 0));
             this.xCrosshair.setLabelVisible(true);
-            this.yCrosshair = new Crosshair(Double.NaN, Color.WHITE, 
+            this.yCrosshair = new Crosshair(Double.NaN, Color.BLACK, 
                     new BasicStroke(0f));
             this.yCrosshair.setStroke(new BasicStroke(1.5f, 
                     BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 1, 
                     new float[] {2.0f, 2.0f}, 0));
             this.yCrosshair.setLabelVisible(true);
+            
             crosshairOverlay.addDomainCrosshair(xCrosshair);
             crosshairOverlay.addRangeCrosshair(yCrosshair);
             
