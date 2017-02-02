@@ -1,10 +1,20 @@
 package ln.afm.gui;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
+import org.apache.commons.math3.fitting.WeightedObservedPoint;
 import org.ejml.data.DenseMatrix32F;
 import org.ejml.data.DenseMatrix64F;
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.data.xy.XYDataset;
+import org.jfree.data.xy.XYSeries;
+import org.jfree.data.xy.XYSeriesCollection;
 
 public class RunAnalysis {
 	
@@ -18,6 +28,8 @@ public class RunAnalysis {
 	private double poissonsRatio;
 	private double tanAlpha;
 	
+	ArrayList<WeightedObservedPoint> points;
+	
 	
 	/**
 	 * Columns are : 	0.Z(nm)		1.D(V)		2.D(nm)		3.Z-Z0(nm)		4.D-D0(nm)		5.D-D0(m) 
@@ -30,11 +42,13 @@ public class RunAnalysis {
 		userLog = log;
 		sensFactor = inputs[0];
 		sprConst = inputs[1];
-		alpha = inputs[2];
+		alpha = inputs[2]; //DEG
 		impactZ = inputs[3];
 		
 		poissonsRatio = 0.25;
-		tanAlpha = Math.tan(alpha);
+		tanAlpha = Math.tan(Math.toRadians(alpha));
+		userLog.append("tanAlpha is: " + tanAlpha +"\n");
+		points = new ArrayList<WeightedObservedPoint>();
 		
 		log.append("Running: " + sensFactor + " " + sprConst + " " + alpha + " " + impactZ + "\n");
 		initMatrix(data);
@@ -60,7 +74,7 @@ public class RunAnalysis {
 	private int getClosest(double value, int column) //TODO ERROR HANDLING
 	{
 		userLog.append("Find closest value..." + "\n");
-		int closestIndex = -1;
+		int closestIndex = 0;
 		double closestDistance = value - dataMatrix.get(0, column);
 		double tempDist = 0;
 		for(int i=0;i < dataMatrix.numRows;i++)
@@ -153,13 +167,63 @@ public class RunAnalysis {
 		System.out.println(dataMatrix.toString());
 	}
 	
-	public void run()
+	private XYDataset toWeightedMatrix()
+	{
+		int start = getClosest(impactZ,0);
+		double weight = 1;
+		double xval = 0;
+		double yval = 0;
+		
+		XYSeries data = new XYSeries("");
+		for(int i=start;i<dataMatrix.numRows;i++)
+		{
+			xval = dataMatrix.get(i, 7);
+			yval = dataMatrix.get(i, 8);
+			WeightedObservedPoint point = new WeightedObservedPoint(weight, xval, yval);
+        	points.add(point);
+        	data.add(xval, yval);
+		}
+		
+		final XYSeriesCollection dataset = new XYSeriesCollection();          
+	    dataset.addSeries(data);
+	    return dataset;
+	}
+	
+	private double calcYoungs(double slope)
+	{
+		double youngs = ((1-Math.pow(poissonsRatio, 2))*slope*Math.PI)/(1000*2*tanAlpha);
+		return youngs;
+	}
+	
+	private void fitMatrix()
+	{
+		CurveSolver fitter = new CurveSolver();
+		final double coeffs[] = fitter.fit(points);
+        userLog.append("Slope is: " + coeffs[0]+ "\n");
+	}
+	
+	public JFreeChart getXYChart()
+	{
+		String xtitle = "Indentation" + " (m)";
+		String ytitle = "Force" + " (N)";
+		JFreeChart xylineChart = ChartFactory.createXYLineChart(
+		         "Test Title",
+		         xtitle,
+		         ytitle,
+		         toWeightedMatrix(),
+		         PlotOrientation.VERTICAL ,
+		         false, //include legend
+		         true,
+		         false);
+		return xylineChart;
+	}
+
+	public JFreeChart run()
 	{
 		userLog.append("Running..." + "\n");
 		calcMatrix();
-		//FitMatrix()
-		//Save Force Distance Curve (regression overlay?)
-		//Save BestFitLine
+		JFreeChart forceIndentation = getXYChart();
+		return forceIndentation;
+		//fitMatrix();
 	}
-
 }

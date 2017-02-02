@@ -21,6 +21,7 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import javax.swing.JTextField;
 import javax.swing.JFormattedTextField;
 import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
@@ -150,7 +151,7 @@ public class AfmDisplay{
 		
 		//test
 		JTextArea log = new JTextArea();
-		log.setFont(new java.awt.Font("Monospaced", java.awt.Font.PLAIN, 18));
+		log.setFont(new java.awt.Font("Monospaced", java.awt.Font.PLAIN, 16));
 		log.setEditable(false);
 		log.setForeground(Color.BLACK);
 		scrollPane.setViewportView(log);
@@ -206,7 +207,13 @@ public class AfmDisplay{
 				{
 					double[] inputs = getInputs();
 					RunAnalysis analyst = new RunAnalysis(data, log, inputs);
-					analyst.run();
+					JFreeChart forceInd = analyst.run();
+					Platform.runLater(new Runnable() { 
+			            @Override
+			            public void run() {
+			                initFX(fxPanel, forceInd);
+			            }
+					});
 				}
 				if(!isReady)
 				{
@@ -234,13 +241,33 @@ public class AfmDisplay{
 		sensFactorField.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 24));
 		frmAfmanalytics.getContentPane().add(sensFactorField, "cell 2 8,growx");
 		sensFactorField.setColumns(10);
-		sensFactorField.addFocusListener(new FocusAdapter() {
-			@Override
-			public void focusLost(FocusEvent arg0) {
+//		sensFactorField.addFocusListener(new FocusAdapter() {
+//			@Override
+//			public void focusLost(FocusEvent arg0) {
+//				boolean isNum = FileParser.isDouble(sensFactorField.getText());
+//				if(isNum)
+//				{
+//					sensFactor = ((Number)sensFactorField.getValue()).doubleValue();
+//				}
+//			}
+//		});
+		sensFactorField.getDocument().addDocumentListener(new DocumentListener() { //http://stackoverflow.com/questions/3953208/value-change-listener-to-jtextfield
+			public void changedUpdate(DocumentEvent e) {
+				updateVal();
+			}
+			public void removeUpdate(DocumentEvent e) {
+				updateVal();
+			}
+			public void insertUpdate(DocumentEvent e) {
+				updateVal();
+			}
+			
+			public void updateVal(){
 				boolean isNum = FileParser.isDouble(sensFactorField.getText());
 				if(isNum)
 				{
 					sensFactor = ((Number)sensFactorField.getValue()).doubleValue();
+					//log.append("New Sense Factor value is: " + sensFactor + "\n");
 				}
 			}
 		});
@@ -258,14 +285,34 @@ public class AfmDisplay{
 		alphaField.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 24));
 		frmAfmanalytics.getContentPane().add(alphaField, "cell 6 8 2 1,growx");
 		alphaField.setColumns(10);
-		alphaField.addFocusListener(new FocusAdapter() {
-			@Override
-			public void focusLost(FocusEvent arg0) {
+//		alphaField.addFocusListener(new FocusAdapter() {
+//			@Override
+//			public void focusLost(FocusEvent arg0) {
+//				boolean isNum = FileParser.isDouble(alphaField.getText());
+//				log.append("Value is: " + alphaField.getText());
+//				if(isNum)
+//				{
+//					alpha = ((Number)alphaField.getValue()).doubleValue();
+//				}
+//			}
+//		});
+		alphaField.getDocument().addDocumentListener(new DocumentListener() { //http://stackoverflow.com/questions/3953208/value-change-listener-to-jtextfield
+			public void changedUpdate(DocumentEvent e) {
+				updateVal();
+			}
+			public void removeUpdate(DocumentEvent e) {
+				updateVal();
+			}
+			public void insertUpdate(DocumentEvent e) {
+				updateVal();
+			}
+			
+			public void updateVal(){
 				boolean isNum = FileParser.isDouble(alphaField.getText());
-				log.append("Value is: " + alphaField.getText());
 				if(isNum)
 				{
 					alpha = ((Number)alphaField.getValue()).doubleValue();
+					//log.append("New Alpha value is: " + alpha + "\n");
 				}
 			}
 		});
@@ -283,14 +330,34 @@ public class AfmDisplay{
 		sprConstField.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 24));
 		frmAfmanalytics.getContentPane().add(sprConstField, "cell 2 9,growx");
 		sprConstField.setColumns(10);
-		sprConstField.addFocusListener(new FocusAdapter() {
-			@Override
-			public void focusLost(FocusEvent arg0) {
+//		sprConstField.addFocusListener(new FocusAdapter() {
+//			@Override
+//			public void focusLost(FocusEvent arg0) {
+//				boolean isNum = FileParser.isDouble(sprConstField.getText());
+//				log.append("Value is: " + sprConstField.getText());
+//				if(isNum)
+//				{
+//					sprConst = ((Number)sprConstField.getValue()).doubleValue();
+//				}
+//			}
+//		});
+		sprConstField.getDocument().addDocumentListener(new DocumentListener() { //http://stackoverflow.com/questions/3953208/value-change-listener-to-jtextfield
+			public void changedUpdate(DocumentEvent e) {
+				updateVal();
+			}
+			public void removeUpdate(DocumentEvent e) {
+				updateVal();
+			}
+			public void insertUpdate(DocumentEvent e) {
+				updateVal();
+			}
+			
+			public void updateVal(){
 				boolean isNum = FileParser.isDouble(sprConstField.getText());
-				log.append("Value is: " + sprConstField.getText());
 				if(isNum)
 				{
 					sprConst = ((Number)sprConstField.getValue()).doubleValue();
+					//log.append("New Spring Constant value is: " + sprConst + "\n");
 				}
 			}
 		});
@@ -307,16 +374,16 @@ public class AfmDisplay{
 		impactZField.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 24));
 		frmAfmanalytics.getContentPane().add(impactZField, "cell 6 9 2 1,growx");
 		impactZField.setColumns(10);
-		impactZField.addFocusListener(new FocusAdapter() {
-			@Override
-			public void focusLost(FocusEvent arg0) {
-				boolean isNum = FileParser.isDouble(impactZField.getText());
-				if(isNum)
-				{
-					impactZ = ((Number)impactZField.getValue()).doubleValue();
-				}
-			}
-		});
+//		impactZField.addFocusListener(new FocusAdapter() {
+//			@Override
+//			public void focusLost(FocusEvent arg0) {
+//				boolean isNum = FileParser.isDouble(impactZField.getText());
+//				if(isNum)
+//				{
+//					impactZ = ((Number)impactZField.getValue()).doubleValue();
+//				}
+//			}
+//		});
 //		impactZField.addPropertyChangeListener(new PropertyChangeListener() {
 //			public void propertyChange(PropertyChangeEvent arg0) {
 //				boolean isNum = FileParser.isDouble(impactZField.getText());
@@ -344,7 +411,7 @@ public class AfmDisplay{
 				{
 					impactZ = clickedZ;
 					//impactZ = ((Number)impactZField.getValue()).doubleValue();
-					log.append("New value is: " + impactZ + "\n");
+					//log.append("New Impact Z value is: " + impactZ + "\n");
 				}
 			}
 		
@@ -355,7 +422,7 @@ public class AfmDisplay{
 		lblnm_1.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 22));
 		frmAfmanalytics.getContentPane().add(lblnm_1, "cell 8 9");
 		
-		JTextPane dirPane = new JTextPane();
+		JTextField dirPane = new JTextField();
 		dirPane.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 24));
 		dirPane.setEditable(false);
 		dirPane.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
@@ -376,7 +443,7 @@ public class AfmDisplay{
 				   log.append("File approved");
 				   dataFile = chooser.getSelectedFile();
 				   File dataDir = chooser.getCurrentDirectory();
-				   dirPane.setText(dataDir.toString());
+				   dirPane.setText(dataDir.toString()+dataFile.toString());
 				   FileParser fP = new FileParser(log, data);
 				   try {
 					dataUpload = fP.readFile(dataFile);
