@@ -207,7 +207,6 @@ public class RunAnalysis {
 		double weight = 1;
 		double xval = 0;
 		double yval = 0;
-		
 		XYSeries data = new XYSeries("raw");
 		for(int i=start+1;i<dataMatrix.numRows;i++)
 		{
@@ -225,8 +224,20 @@ public class RunAnalysis {
 		maxX = data.getMaxX();
 		maxY = data.getMaxY();
 		
+		double[] trends = fitMatrix();
+		XYSeries powTrend = new XYSeries("power");
+		XYSeries linTrend = new XYSeries("lin");
+		for(int i=start+1;i < dataMatrix.numRows;i++)
+		{
+			xval = dataMatrix.get(i,7);
+			powTrend.add(xval, trends[0]*Math.pow(xval, trends[1]));
+			linTrend.add(xval, Math.exp(trends[3])*Math.pow(xval, trends[2]));
+		}
+		
 		final XYSeriesCollection dataset = new XYSeriesCollection();          
 	    dataset.addSeries(data);
+	    dataset.addSeries(powTrend);
+	    dataset.addSeries(linTrend);
 	    return dataset;
 	}
 	
@@ -236,12 +247,21 @@ public class RunAnalysis {
 		return youngs;
 	}
 	
-	private void fitMatrix()
+	private double[] fitMatrix()
 	{
 		CurveSolver fitter = new CurveSolver();
 		final double coeffs[] = fitter.fit(points);
-        userLog.append("CurveSolver slope is: " + coeffs[0]+ "\n");
-        userLog.append("LinReg Slope: " + linReg.getSlope() + " Int: " + linReg.getIntercept() + "\n");
+		ArrayList<WeightedObservedPoint> test_points = new ArrayList<WeightedObservedPoint>();
+        for(int i=1;i < 25;i++)
+        {
+        	WeightedObservedPoint point = new WeightedObservedPoint(1.0, i, 1.731*i*i);
+        	test_points.add(point);
+        }
+        final double testCoeffs[] = fitter.fit(test_points);
+        userLog.append("Curve Slope: " + coeffs[0] + " Exp: " + coeffs[1] + "\n");
+        userLog.append("LinReg Slope: " + linReg.getSlope() + " Int " + linReg.getIntercept() + " R: " + linReg.getRSquare() + "\n");
+        double[] results = {coeffs[0], coeffs[1], linReg.getSlope(), linReg.getIntercept()};
+        return results;
 	}
 	
 	public JFreeChart getXYChart()
@@ -254,7 +274,7 @@ public class RunAnalysis {
 		         ytitle,
 		         toWeightedMatrix(),
 		         PlotOrientation.VERTICAL ,
-		         false, //include legend
+		         true, //include legend
 		         true,
 		         false);
 		
@@ -276,7 +296,7 @@ public class RunAnalysis {
 		userLog.append("Running..." + "\n");
 		calcMatrix();
 		JFreeChart forceIndentation = getXYChart();
-		fitMatrix();
+		//fitMatrix();
 		return forceIndentation;
 		//fitMatrix();
 	}
