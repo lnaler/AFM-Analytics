@@ -94,6 +94,7 @@ public class AfmDisplay{
 	private File dataFile;
 	private CurveData data;
 	private boolean dataUpload;
+	private static boolean zUpdatedFX;
 	
 	/**
 	 * Launch the application.
@@ -411,8 +412,17 @@ public class AfmDisplay{
 				boolean isNum = FileParser.isDouble(impactZField.getText());
 				if(isNum)
 				{
-					impactZ = clickedZ;
-					//impactZ = ((Number)impactZField.getValue()).doubleValue();
+					if(!zUpdatedFX)
+					{
+						double tempVal = ((Number)impactZField.getValue()).doubleValue();
+						updateClickedZ(tempVal);
+						impactZ = tempVal;
+					}
+					if(zUpdatedFX)
+					{
+						impactZ = clickedZ;
+						zChanged(false);
+					}
 					//log.append("New Impact Z value is: " + impactZ + "\n");
 				}
 			}
@@ -474,6 +484,11 @@ public class AfmDisplay{
 		return(sff && scf & af & izf);
 	}
 	
+	private static void updateClickedZ(double newVal)
+	{
+		clickedZ = newVal;
+	}
+	
 	private double[] getInputs()
 	{
 		double[] result = {sensFactor, sprConst, alpha, impactZ};
@@ -528,6 +543,10 @@ public class AfmDisplay{
         return (scene);
     }
     
+    private static void zChanged(boolean yesno){
+    	zUpdatedFX = yesno;
+    }
+    
     static class ChartDisplay extends StackPane implements ChartMouseListenerFX { //From JFreeChart CrosshairOverlayFXDemo1
         
         private ChartViewer chartViewer;
@@ -578,7 +597,8 @@ public class AfmDisplay{
         	    @Override
         	    public void run() {
         	    	//impactZField.setText("Woo");
-        	    	clickedZ = xValue;
+        	    	updateClickedZ(xValue);
+        	    	zChanged(true);
         	    	impactZField.setText(String.format("%,.3f", xValue));
         	    }
         	});
@@ -602,7 +622,7 @@ public class AfmDisplay{
         }
         
     }
- 
+    
     public static XYDataset createDataset() {
         XYSeries series = new XYSeries("S1");
         for (int x = 0; x < 10; x++) {
