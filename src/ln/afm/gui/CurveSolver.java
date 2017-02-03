@@ -8,18 +8,24 @@ import org.apache.commons.math3.fitting.leastsquares.LeastSquaresProblem;
 import org.apache.commons.math3.fitting.WeightedObservedPoint;
 import org.apache.commons.math3.linear.DiagonalMatrix;
 
+//http://stackoverflow.com/questions/11335127/how-to-use-java-math-commons-curvefitter
 class PowerFunction implements ParametricUnivariateFunction {
     public double value(double x, double... parameters) {
-        return parameters[0]*Math.pow(x, 2);
+    	final double a = parameters[0];
+        final double b = parameters[1];
+        
+        return a*Math.pow(x, b);
     }
 
     // Jacobian matrix of the above. In this case, this is just an array of
     // partial derivatives of the above function, with one element for each parameter.
     public double[] gradient(double x, double... parameters) {
         final double a = parameters[0];
-
+        final double b = parameters[1];
+        
         return new double[] {
-            2.0*a*x
+        	Math.pow(x, b),
+            Math.log(x)*a*Math.pow(x, b)
         };
     }
 }
@@ -29,7 +35,7 @@ public class CurveSolver extends AbstractCurveFitter {
         final int len = points.size();
         final double[] target  = new double[len];
         final double[] weights = new double[len];
-        final double[] initialGuess = {1.0};
+        final double[] initialGuess = {1.0, 1.0};
 
         int i = 0;
         for(WeightedObservedPoint point : points) {
@@ -58,7 +64,7 @@ public class CurveSolver extends AbstractCurveFitter {
 //        // Add points here; for instance,
 //        for(int i=1;i < 25;i++)
 //        {
-//        	WeightedObservedPoint point = new WeightedObservedPoint(1.0,Math.log(i),(2*Math.log(i)+Math.log(2)));
+//        	WeightedObservedPoint point = new WeightedObservedPoint(1.0, i, 1.731*i*i);
 //        	points.add(point);
 //        }
 ////        WeightedObservedPoint point = new WeightedObservedPoint(1.0,
