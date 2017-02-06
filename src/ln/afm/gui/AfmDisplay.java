@@ -2,6 +2,7 @@ package ln.afm.gui;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
@@ -14,6 +15,7 @@ import java.util.logging.Logger;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -26,6 +28,7 @@ import javax.swing.JFormattedTextField;
 import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
 import javax.swing.border.BevelBorder;
+import javax.swing.border.Border;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
@@ -70,11 +73,17 @@ import java.beans.PropertyChangeEvent;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import org.jfree.chart.ChartPanel;
+import javax.swing.JMenuBar;
+import javax.swing.JToggleButton;
+import javax.swing.JCheckBox;
+import javax.swing.SwingConstants;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
 
 public class AfmDisplay{
 	private static final Logger LOGGER = Logger.getLogger(AfmDisplay.class.getName() );
-	private static double FXWIDTH = 700d;
-	private static double FXHEIGHT = 600d;
+	private static int FXWIDTH = 445;
+	private static int FXHEIGHT = 340;
 	
 	private JFrame frmAfmanalytics;
 	private final Action action = new SwingAction();
@@ -89,12 +98,20 @@ public class AfmDisplay{
 	private double sprConst;
 	private double alpha;
 	private double impactZ;
+	private double zLimit;
 	
 	private JTextArea log;
 	private File dataFile;
 	private CurveData data;
 	private boolean dataUpload;
 	private static boolean zUpdatedFX;
+	private boolean limitZ = false;
+	private JFormattedTextField indentLimit;
+	private JTextField txtSlope;
+	private JTextField txtRsquared;
+	private JTextField txtYoungsModulus;
+	private JTextField txtExp;
+	private JCheckBox chckbxSelectZ;
 	
 	/**
 	 * Launch the application.
@@ -129,16 +146,19 @@ public class AfmDisplay{
 		impactZ = 0;
 		
 		frmAfmanalytics = new JFrame();
-		frmAfmanalytics.getContentPane().setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 22));
+		frmAfmanalytics.setResizable(false);
+		frmAfmanalytics.getContentPane().setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 16));
 		frmAfmanalytics.setTitle("AFM-Analytics");
-		frmAfmanalytics.setBounds(100, 100, 925, 675);
+		frmAfmanalytics.setSize(800, 600);
+		frmAfmanalytics.setLocationByPlatform(true);
 		frmAfmanalytics.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frmAfmanalytics.getContentPane().setLayout(new MigLayout("", "[100.00px:100.00px:100.00px][100.00px:100px:100px][100px:100px:100px,grow][100px:100px:100px][100px:100px:100px][100px:100px:100px][100.00px:100px:100px,grow][25px:25px:25px][70px:70px:70px][50px:50px:50px]", "[50px:50px:50px][50px:50px:50px][50px:50px:50px][50px:50px:50px,grow][50px:50px:50px][50px:50px:50px][50px:50px:50px][50px:50px:50px][50px:50px:50px][50px:50px:50px][50px:50px:50px]"));
+		frmAfmanalytics.getContentPane().setLayout(new MigLayout("", "[pref!][130.00px:130.00px][95.00px:95.00px][49.00px:49.00px][72.00px:84.00px][30px:50.00px][30px:30px][72.00px:72.00px][72.00px:72.00px][35px:35.00px][30px:30px][30px:30px]", "[28px:28px][28px:28px][28px:28px][28px:28px][28px:28px][28px:28px][28px:28px][28px:28px][28:28][28px:28px][23px:23px][28px:28px][28px:28px][28px:28px][28px:28px][28px:28px][28px:28px]"));
 		
 		JFXPanel fxPanel = new JFXPanel(); //https://docs.oracle.com/javase/8/javafx/interoperability-tutorial/swing-fx-interoperability.htm
 		fxPanel.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
 		fxPanel.setBackground(Color.WHITE);
-		frmAfmanalytics.getContentPane().add(fxPanel, "flowx,cell 0 0 5 7");
+		//fxPanel.setMinimumSize(new Dimension(445, 340));
+		frmAfmanalytics.getContentPane().add(fxPanel, "flowx,cell 0 0 7 11,grow");
 		
 		Platform.runLater(new Runnable() {
             @Override
@@ -149,7 +169,7 @@ public class AfmDisplay{
 		
 		JScrollPane scrollPane = new JScrollPane();
 		scrollPane.setViewportBorder(new SoftBevelBorder(BevelBorder.LOWERED, null, null, null, null));
-		frmAfmanalytics.getContentPane().add(scrollPane, "cell 5 0 5 3,grow");
+		frmAfmanalytics.getContentPane().add(scrollPane, "cell 8 12 4 4,grow");
 		
 		
 		//test
@@ -161,15 +181,10 @@ public class AfmDisplay{
 		
 		data = new CurveData(log);
 		
-		ChartPanel chartPanel = new ChartPanel((JFreeChart) null);
-		chartPanel.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
-		chartPanel.setBackground(Color.WHITE);
-		frmAfmanalytics.getContentPane().add(chartPanel, "cell 5 3 5 4,grow");
-		
 		JButton btnClearData = new JButton("Clear");
 		btnClearData.setEnabled(false);
-		btnClearData.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 24));
-		frmAfmanalytics.getContentPane().add(btnClearData, "cell 0 7,growx");
+		btnClearData.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 18));
+		frmAfmanalytics.getContentPane().add(btnClearData, "cell 1 11,alignx left");
 		btnClearData.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent arg0) {
@@ -184,7 +199,7 @@ public class AfmDisplay{
 		});
 		
 		JButton btnView = new JButton("View");
-		btnView.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 24));
+		btnView.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 18));
 		btnView.setEnabled(false);
 		btnView.addMouseListener(new MouseAdapter() {
 			@Override
@@ -193,6 +208,7 @@ public class AfmDisplay{
 				data.changeUnits(testUnits);
 				data.printData();
 				JFreeChart chart = data.getXYChart();
+				btnClearData.setEnabled(true);
 				Platform.runLater(new Runnable() { 
 		            @Override
 		            public void run() {
@@ -201,12 +217,17 @@ public class AfmDisplay{
 				});
 			}
 		});
-		frmAfmanalytics.getContentPane().add(btnView, "cell 1 7,growx");
+		frmAfmanalytics.getContentPane().add(btnView, "cell 4 11,growx");
+		
+		ChartPanel chartPanel = new ChartPanel((JFreeChart) null);
+		chartPanel.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
+		chartPanel.setBackground(Color.WHITE);
+		frmAfmanalytics.getContentPane().add(chartPanel, "cell 7 0 5 11,grow");
 		
 		JButton btnRun = new JButton("Run");
-		btnRun.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 24));
+		btnRun.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 18));
 		btnRun.setEnabled(false);
-		frmAfmanalytics.getContentPane().add(btnRun, "cell 5 7,growx");
+		frmAfmanalytics.getContentPane().add(btnRun, "cell 5 11 2 1,growx");
 		btnRun.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent arg0) {
@@ -217,6 +238,7 @@ public class AfmDisplay{
 					RunAnalysis analyst = new RunAnalysis(data, log, inputs);
 					JFreeChart forceInd = analyst.run();
 					chartPanel.setChart(forceInd);
+					updateResults(analyst.getResults());
 				}
 				if(!isReady)
 				{
@@ -225,9 +247,19 @@ public class AfmDisplay{
 			}
 		});
 		
+		JButton btnClearChart = new JButton("Clear Chart");
+		btnClearChart.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 18));
+		frmAfmanalytics.getContentPane().add(btnClearChart, "cell 8 11 2 1");
+		btnClearChart.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent arg0) {
+				chartPanel.removeAll();
+			}
+		});
+		
 		JButton btnClearLog = new JButton("Clear Log");
-		btnClearLog.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 24));
-		frmAfmanalytics.getContentPane().add(btnClearLog, "cell 7 7 3 1,alignx right");
+		btnClearLog.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 18));
+		frmAfmanalytics.getContentPane().add(btnClearLog, "cell 10 11 2 1,alignx right");
 		btnClearLog.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent arg0) {
@@ -236,24 +268,14 @@ public class AfmDisplay{
 		});
 		
 		JLabel lblSensitivityFactor = new JLabel("Sensitivity Factor");
-		lblSensitivityFactor.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 24));
-		frmAfmanalytics.getContentPane().add(lblSensitivityFactor, "cell 0 8 2 1,alignx right");
+		lblSensitivityFactor.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 18));
+		frmAfmanalytics.getContentPane().add(lblSensitivityFactor, "cell 1 12,alignx right");
 		
 		sensFactorField = new JFormattedTextField(NumberFormat.getNumberInstance());
 		sensFactorField.setValue(new Double(0));
-		sensFactorField.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 24));
-		frmAfmanalytics.getContentPane().add(sensFactorField, "cell 2 8,growx");
-		sensFactorField.setColumns(10);
-//		sensFactorField.addFocusListener(new FocusAdapter() {
-//			@Override
-//			public void focusLost(FocusEvent arg0) {
-//				boolean isNum = FileParser.isDouble(sensFactorField.getText());
-//				if(isNum)
-//				{
-//					sensFactor = ((Number)sensFactorField.getValue()).doubleValue();
-//				}
-//			}
-//		});
+		sensFactorField.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 18));
+		frmAfmanalytics.getContentPane().add(sensFactorField, "cell 2 12,growx");
+		sensFactorField.setColumns(5);
 		sensFactorField.getDocument().addDocumentListener(new DocumentListener() { //http://stackoverflow.com/questions/3953208/value-change-listener-to-jtextfield
 			public void changedUpdate(DocumentEvent e) {
 				updateVal();
@@ -276,30 +298,19 @@ public class AfmDisplay{
 		});
 		
 		JLabel lblnmv = new JLabel("(nm/V)");
-		lblnmv.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 22));
-		frmAfmanalytics.getContentPane().add(lblnmv, "cell 3 8,alignx left");
+		lblnmv.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 16));
+		frmAfmanalytics.getContentPane().add(lblnmv, "cell 3 12,alignx left");
 		
-		JLabel lblAlpha = new JLabel("Alpha");
-		lblAlpha.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 24));
-		frmAfmanalytics.getContentPane().add(lblAlpha, "cell 4 8 2 1,alignx right");
+		JCheckBox chckbxIndentThreshold = new JCheckBox("Limit Indent %");
+		chckbxIndentThreshold.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 18));
+		frmAfmanalytics.getContentPane().add(chckbxIndentThreshold, "cell 4 12 3 1");
 		
-		alphaField = new JFormattedTextField(NumberFormat.getNumberInstance());
-		alphaField.setValue(new Double(0));
-		alphaField.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 24));
-		frmAfmanalytics.getContentPane().add(alphaField, "cell 6 8 2 1,growx");
-		alphaField.setColumns(10);
-//		alphaField.addFocusListener(new FocusAdapter() {
-//			@Override
-//			public void focusLost(FocusEvent arg0) {
-//				boolean isNum = FileParser.isDouble(alphaField.getText());
-//				log.append("Value is: " + alphaField.getText());
-//				if(isNum)
-//				{
-//					alpha = ((Number)alphaField.getValue()).doubleValue();
-//				}
-//			}
-//		});
-		alphaField.getDocument().addDocumentListener(new DocumentListener() { //http://stackoverflow.com/questions/3953208/value-change-listener-to-jtextfield
+		indentLimit = new JFormattedTextField(NumberFormat.getNumberInstance());
+		indentLimit.setValue(new Double(0));
+		indentLimit.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 18));
+		frmAfmanalytics.getContentPane().add(indentLimit, "cell 7 12,growx");
+		indentLimit.setColumns(10);
+		indentLimit.getDocument().addDocumentListener(new DocumentListener() { //http://stackoverflow.com/questions/3953208/value-change-listener-to-jtextfield
 			public void changedUpdate(DocumentEvent e) {
 				updateVal();
 			}
@@ -311,39 +322,24 @@ public class AfmDisplay{
 			}
 			
 			public void updateVal(){
-				boolean isNum = FileParser.isDouble(alphaField.getText());
+				boolean isNum = FileParser.isDouble(indentLimit.getText());
 				if(isNum)
 				{
-					alpha = ((Number)alphaField.getValue()).doubleValue();
+					zLimit = ((Number)indentLimit.getValue()).doubleValue();
 					//log.append("New Alpha value is: " + alpha + "\n");
 				}
 			}
 		});
 		
-		JLabel lbldeg = new JLabel("(deg)");
-		lbldeg.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 22));
-		frmAfmanalytics.getContentPane().add(lbldeg, "cell 8 8");
-		
 		JLabel lblSpringConstant = new JLabel("Spring Constant");
-		lblSpringConstant.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 24));
-		frmAfmanalytics.getContentPane().add(lblSpringConstant, "cell 0 9 2 1,alignx right");
+		lblSpringConstant.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 18));
+		frmAfmanalytics.getContentPane().add(lblSpringConstant, "cell 1 13,alignx right");
 		
 		sprConstField = new JFormattedTextField(NumberFormat.getNumberInstance());
 		sprConstField.setValue(new Double(0));
-		sprConstField.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 24));
-		frmAfmanalytics.getContentPane().add(sprConstField, "cell 2 9,growx");
-		sprConstField.setColumns(10);
-//		sprConstField.addFocusListener(new FocusAdapter() {
-//			@Override
-//			public void focusLost(FocusEvent arg0) {
-//				boolean isNum = FileParser.isDouble(sprConstField.getText());
-//				log.append("Value is: " + sprConstField.getText());
-//				if(isNum)
-//				{
-//					sprConst = ((Number)sprConstField.getValue()).doubleValue();
-//				}
-//			}
-//		});
+		sprConstField.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 18));
+		frmAfmanalytics.getContentPane().add(sprConstField, "cell 2 13,growx");
+		sprConstField.setColumns(5);
 		sprConstField.getDocument().addDocumentListener(new DocumentListener() { //http://stackoverflow.com/questions/3953208/value-change-listener-to-jtextfield
 			public void changedUpdate(DocumentEvent e) {
 				updateVal();
@@ -366,37 +362,111 @@ public class AfmDisplay{
 		});
 		
 		JLabel lblnm = new JLabel("(N/m)");
-		lblnm.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 22));
-		frmAfmanalytics.getContentPane().add(lblnm, "cell 3 9");
+		lblnm.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 16));
+		frmAfmanalytics.getContentPane().add(lblnm, "cell 3 13,alignx trailing");
 		
-		JLabel lblImpactPointz = new JLabel("Impact Point (Z)");
-		lblImpactPointz.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 24));
-		frmAfmanalytics.getContentPane().add(lblImpactPointz, "cell 4 9 2 1,alignx right");	
+		txtSlope = new JTextField();
+		txtSlope.setBackground(UIManager.getColor("Button.background"));
+		txtSlope.setEditable(false);
+		txtSlope.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 18));
+		txtSlope.setBorder(BorderFactory.createEmptyBorder());
+		txtSlope.setText("Slope: ");
+		frmAfmanalytics.getContentPane().add(txtSlope, "cell 4 13 2 1,growx");
+		txtSlope.setColumns(10);
+		
+		txtExp = new JTextField();
+		txtExp.setBackground(UIManager.getColor("Button.background"));
+		txtExp.setEditable(false);
+		txtExp.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 18));
+		txtExp.setText("Exp:");
+		txtExp.setBorder(BorderFactory.createEmptyBorder());
+		frmAfmanalytics.getContentPane().add(txtExp, "cell 6 13 2 1,growx");
+		txtExp.setColumns(10);
+		
+		JLabel lblAlpha = new JLabel("Alpha");
+		lblAlpha.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 18));
+		frmAfmanalytics.getContentPane().add(lblAlpha, "cell 1 14,alignx right");
+		
+		alphaField = new JFormattedTextField(NumberFormat.getNumberInstance());
+		alphaField.setValue(new Double(0));
+		alphaField.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 18));
+		frmAfmanalytics.getContentPane().add(alphaField, "cell 2 14,growx");
+		alphaField.setColumns(10);
+		//		alphaField.addFocusListener(new FocusAdapter() {
+		//			@Override
+		//			public void focusLost(FocusEvent arg0) {
+		//				boolean isNum = FileParser.isDouble(alphaField.getText());
+		//				log.append("Value is: " + alphaField.getText());
+		//				if(isNum)
+		//				{
+		//					alpha = ((Number)alphaField.getValue()).doubleValue();
+		//				}
+		//			}
+		//		});
+		alphaField.getDocument().addDocumentListener(new DocumentListener() { //http://stackoverflow.com/questions/3953208/value-change-listener-to-jtextfield
+			public void changedUpdate(DocumentEvent e) {
+				updateVal();
+			}
+			public void removeUpdate(DocumentEvent e) {
+				updateVal();
+			}
+			public void insertUpdate(DocumentEvent e) {
+				updateVal();
+			}
+			
+			public void updateVal(){
+				boolean isNum = FileParser.isDouble(alphaField.getText());
+				if(isNum)
+				{
+					alpha = ((Number)alphaField.getValue()).doubleValue();
+					//log.append("New Alpha value is: " + alpha + "\n");
+				}
+			}
+		});
+		
+		JLabel lbldeg = new JLabel("(deg)");
+		lbldeg.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 16));
+		frmAfmanalytics.getContentPane().add(lbldeg, "cell 3 14,alignx trailing");
+		
+		txtRsquared = new JTextField();
+		txtRsquared.setBackground(UIManager.getColor("Button.background"));
+		txtRsquared.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 18));
+		txtRsquared.setEditable(false);
+		txtRsquared.setText("R-Squared:");
+		txtRsquared.setBorder(BorderFactory.createEmptyBorder());
+		frmAfmanalytics.getContentPane().add(txtRsquared, "cell 4 14 4 1,growx");
+		txtRsquared.setColumns(10);
+		
+		chckbxSelectZ = new JCheckBox("   Select Z0");
+		chckbxSelectZ.setEnabled(false);
+		chckbxSelectZ.setSelected(true);
+		chckbxSelectZ.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 18));
+		frmAfmanalytics.getContentPane().add(chckbxSelectZ, "cell 1 15,alignx right");
 		
 		impactZField.setValue(new Double(0));
-		impactZField.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 24));
-		frmAfmanalytics.getContentPane().add(impactZField, "cell 6 9 2 1,growx");
+		impactZField.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 18));
+		frmAfmanalytics.getContentPane().add(impactZField, "cell 2 15,growx");
 		impactZField.setColumns(10);
-//		impactZField.addFocusListener(new FocusAdapter() {
-//			@Override
-//			public void focusLost(FocusEvent arg0) {
-//				boolean isNum = FileParser.isDouble(impactZField.getText());
-//				if(isNum)
-//				{
-//					impactZ = ((Number)impactZField.getValue()).doubleValue();
-//				}
-//			}
-//		});
-//		impactZField.addPropertyChangeListener(new PropertyChangeListener() {
-//			public void propertyChange(PropertyChangeEvent arg0) {
-//				boolean isNum = FileParser.isDouble(impactZField.getText());
-//				log.append("Value is: " + impactZField.getText());
-//				if(isNum)
-//				{
-//					impactZ = ((Number)impactZField.getValue()).doubleValue();
-//				}
-//			}
-//		});
+		//		impactZField.addFocusListener(new FocusAdapter() {
+		//			@Override
+		//			public void focusLost(FocusEvent arg0) {
+		//				boolean isNum = FileParser.isDouble(impactZField.getText());
+		//				if(isNum)
+		//				{
+		//					impactZ = ((Number)impactZField.getValue()).doubleValue();
+		//				}
+		//			}
+		//		});
+		//		impactZField.addPropertyChangeListener(new PropertyChangeListener() {
+		//			public void propertyChange(PropertyChangeEvent arg0) {
+		//				boolean isNum = FileParser.isDouble(impactZField.getText());
+		//				log.append("Value is: " + impactZField.getText());
+		//				if(isNum)
+		//				{
+		//					impactZ = ((Number)impactZField.getValue()).doubleValue();
+		//				}
+		//			}
+		//		});
 		impactZField.getDocument().addDocumentListener(new DocumentListener() { //http://stackoverflow.com/questions/3953208/value-change-listener-to-jtextfield
 			public void changedUpdate(DocumentEvent e) {
 				updateVal();
@@ -431,17 +501,27 @@ public class AfmDisplay{
 
 		
 		JLabel lblnm_1 = new JLabel("(nm)");
-		lblnm_1.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 22));
-		frmAfmanalytics.getContentPane().add(lblnm_1, "cell 8 9");
+		lblnm_1.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 16));
+		frmAfmanalytics.getContentPane().add(lblnm_1, "cell 3 15,alignx trailing");
+		
+		txtYoungsModulus = new JTextField();
+		txtYoungsModulus.setBackground(UIManager.getColor("Button.background"));
+		txtYoungsModulus.setEditable(false);
+		txtYoungsModulus.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 18));
+		txtYoungsModulus.setText("Young's Modulus: ");
+		txtYoungsModulus.setBorder(BorderFactory.createEmptyBorder());
+		frmAfmanalytics.getContentPane().add(txtYoungsModulus, "cell 4 15 4 1,grow");
+		txtYoungsModulus.setColumns(10);
 		
 		JTextField dirPane = new JTextField();
-		dirPane.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 24));
+		dirPane.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 18));
 		dirPane.setEditable(false);
 		dirPane.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
-		frmAfmanalytics.getContentPane().add(dirPane, "cell 0 10 7 1,growx,aligny center");
+		frmAfmanalytics.getContentPane().add(dirPane, "cell 1 16 9 1,growx,aligny center");
 		
-		JButton btnBrowse = new JButton("Browse");
-		btnBrowse.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 24));
+		JButton btnBrowse = new JButton("  Browse  ");
+		btnBrowse.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 18));
+		frmAfmanalytics.getContentPane().add(btnBrowse, "cell 10 16 2 1,alignx right");
 		btnBrowse.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent arg0) {
@@ -465,12 +545,11 @@ public class AfmDisplay{
 				   }
 				   log.append("File has been processed successfully." + "\n");
 				   btnView.setEnabled(true);
-				   btnClearData.setEnabled(true);
+				   //btnClearData.setEnabled(true);
 				   btnRun.setEnabled(true);
 				}
 			}
 		});
-		frmAfmanalytics.getContentPane().add(btnBrowse, "cell 7 10 3 1,growx");
 		
 	}
 	
@@ -491,7 +570,7 @@ public class AfmDisplay{
 	
 	private double[] getInputs()
 	{
-		double[] result = {sensFactor, sprConst, alpha, impactZ};
+		double[] result = {sensFactor, sprConst, alpha, impactZ, zLimit};
 		return result;
 	}
 
@@ -509,6 +588,14 @@ public class AfmDisplay{
 		log.append(update);
 	}
 	
+	private void updateResults(double[] results)
+    {	
+    	txtSlope.setText(String.format("Slope: %,.1f", results[0]));
+    	txtExp.setText(String.format("Exp: %.3f", results[1]));
+    	txtRsquared.setText(String.format("R-Squared: %.2f", results[2]));
+    	txtYoungsModulus.setText(String.format("Young's Modulus: %,.1f"+"kPa", results[3]));
+    }
+	
 //	private static PieDataset createDataset( ) 
 //	   {
 //	      DefaultPieDataset dataset = new DefaultPieDataset( );
@@ -523,12 +610,14 @@ public class AfmDisplay{
         // This method is invoked on the JavaFX thread
         Scene scene = createScene();
         fxPanel.setScene(scene);
+        //fxPanel.setMinimumSize(new Dimension(FXWIDTH, FXHEIGHT));
     }
 	
 	private static void initFX(JFXPanel fxPanel, JFreeChart inChart) {
         // This method is invoked on the JavaFX thread
         Scene scene = createScene(inChart);
         fxPanel.setScene(scene);
+        //fxPanel.setMinimumSize(new Dimension(FXWIDTH, FXHEIGHT));
     }
 	
     private static Scene createScene() {
@@ -540,6 +629,7 @@ public class AfmDisplay{
     private static Scene createScene(JFreeChart inChart){
     	Group  root  =  new  Group();
         Scene  scene  =  new  Scene(new ChartDisplay(inChart), FXWIDTH, FXHEIGHT);
+    	//Scene scene = new Scene(new ChartDisplay(inChart));
         return (scene);
     }
     
@@ -574,13 +664,13 @@ public class AfmDisplay{
             this.xCrosshair.setStroke(new BasicStroke(1.5f, 
                     BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 1, 
                     new float[]{2.0f, 2.0f}, 0));
-            this.xCrosshair.setLabelVisible(true);
+            this.xCrosshair.setLabelVisible(false);
             this.yCrosshair = new Crosshair(Double.NaN, Color.BLACK, 
                     new BasicStroke(0f));
             this.yCrosshair.setStroke(new BasicStroke(1.5f, 
                     BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 1, 
                     new float[] {2.0f, 2.0f}, 0));
-            this.yCrosshair.setLabelVisible(true);
+            this.yCrosshair.setLabelVisible(false);
             
             crosshairOverlay.addDomainCrosshair(xCrosshair);
             crosshairOverlay.addRangeCrosshair(yCrosshair);
@@ -652,4 +742,18 @@ public class AfmDisplay{
     {
         JOptionPane.showMessageDialog(null, infoMessage, "Notice: " + titleBar, JOptionPane.INFORMATION_MESSAGE);
     }
+    
+//    private static int roundDouble(double a)
+//    {
+//    	Double round = 0d;
+//    	if((Math.ceil(a) - a) > 0.5)
+//    	{
+//    		round = Math.ceil(a);
+//    	}
+//    	else if((Math.ceil(a) - a) <= 0.5)
+//    	{
+//    		round = Math.floor(a);
+//    	}
+//    	return round.intValue();
+//    }
 }

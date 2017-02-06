@@ -143,7 +143,7 @@ public class CurveData {
 		String xtitle = "Indentation" + " (" + units[0] + ")";
 		String ytitle = "Deflection" + " (" + units[1] + ")";
 		JFreeChart xylineChart = ChartFactory.createXYLineChart(
-		         "Test Title",
+		         "",
 		         xtitle,
 		         ytitle,
 		         getXYData(),

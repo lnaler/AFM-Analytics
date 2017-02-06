@@ -35,6 +35,11 @@ public class RunAnalysis {
 	private double maxX;
 	private double maxY;
 	
+	private double slope;
+	private double expo;
+	private double R2 = 0.0;
+	private double youngs;
+	
 	private SimpleRegression linReg;
 	
 	ArrayList<WeightedObservedPoint> points;
@@ -241,9 +246,9 @@ public class RunAnalysis {
 	    return dataset;
 	}
 	
-	private double calcYoungs(double slope)
+	private double calcYoungs(double inSlope)
 	{
-		double youngs = ((1-Math.pow(poissonsRatio, 2))*slope*Math.PI)/(1000*2*tanAlpha);
+		double youngs = ((1-Math.pow(poissonsRatio, 2))*inSlope*Math.PI)/(1000*2*tanAlpha);
 		return youngs;
 	}
 	
@@ -258,6 +263,8 @@ public class RunAnalysis {
         	test_points.add(point);
         }
         final double testCoeffs[] = fitter.fit(test_points);
+        slope = coeffs[0];
+        expo = coeffs[1];
         userLog.append("Curve Slope: " + coeffs[0] + " Exp: " + coeffs[1] + "\n");
         userLog.append("LinReg Slope: " + linReg.getSlope() + " Int " + linReg.getIntercept() + " R: " + linReg.getRSquare() + "\n");
         double[] results = {coeffs[0], coeffs[1], linReg.getSlope(), linReg.getIntercept()};
@@ -299,5 +306,11 @@ public class RunAnalysis {
 		//fitMatrix();
 		return forceIndentation;
 		//fitMatrix();
+	}
+	
+	public double[] getResults()
+	{
+		double[] results = {slope, expo, R2, calcYoungs(slope)};
+		return results;
 	}
 }
