@@ -27,6 +27,10 @@ public class RunAnalysis {
 	private double alpha;
 	private double impactZ;
 	
+	private boolean hasLimit;
+	private double limitPercent;
+	private double gelSize;
+	
 	private double poissonsRatio;
 	private double tanAlpha;
 	
@@ -51,20 +55,24 @@ public class RunAnalysis {
 	 */
 	private DenseMatrix64F dataMatrix;
 
-	public RunAnalysis(CurveData data, JTextArea log, double[] inputs) { //TODO ERROR HANDLING
+	public RunAnalysis(CurveData data, JTextArea log, double[] inputs, boolean limitZ) { //TODO ERROR HANDLING
 		userData = data;
 		userLog = log;
 		sensFactor = inputs[0];
 		sprConst = inputs[1];
 		alpha = inputs[2]; //DEG
 		impactZ = inputs[3];
+		limitPercent = inputs[4];
+		gelSize = inputs[5];
+		
+		hasLimit = limitZ;
 		
 		poissonsRatio = 0.25;
 		tanAlpha = Math.tan(Math.toRadians(alpha));
 		userLog.append("tanAlpha is: " + tanAlpha +"\n");
 		points = new ArrayList<WeightedObservedPoint>();
 		
-		log.append("Running: " + sensFactor + " " + sprConst + " " + alpha + " " + impactZ + "\n");
+		log.append("Running: " + sensFactor + " " + sprConst + " " + alpha + " " + impactZ + " " + limitPercent + " " + gelSize + " " + hasLimit + "\n");
 		initMatrix(data);
 		
 		linReg = new SimpleRegression();
@@ -204,6 +212,12 @@ public class RunAnalysis {
 	private XYDataset toWeightedMatrix()
 	{
 		int start = getLastNaN(10);
+		int last = getLimit();
+		if(last <= start)
+		{
+			last = dataMatrix.numRows;
+			AfmDisplay.infoBox("Gel size error. Reverting to complete usage.", "ERROR");
+		}
 		if(start == (dataMatrix.numRows - 1))
 		{
 			AfmDisplay.infoBox("All ln(F) are NaN", "ERROR");
@@ -213,7 +227,8 @@ public class RunAnalysis {
 		double xval = 0;
 		double yval = 0;
 		XYSeries data = new XYSeries("raw");
-		for(int i=start+1;i<dataMatrix.numRows;i++)
+		//for(int i=start+1;i<dataMatrix.numRows;i++)
+		for(int i=start+1;i<last;i++)
 		{
 			xval = dataMatrix.get(i, 7);
 			yval = dataMatrix.get(i, 8);
@@ -232,7 +247,7 @@ public class RunAnalysis {
 		double[] trends = fitMatrix();
 		XYSeries powTrend = new XYSeries("power");
 		XYSeries linTrend = new XYSeries("lin");
-		for(int i=start+1;i < dataMatrix.numRows;i++)
+		for(int i=start+1;i < last;i++)
 		{
 			xval = dataMatrix.get(i,7);
 			powTrend.add(xval, trends[0]*Math.pow(xval, trends[1]));
@@ -256,13 +271,13 @@ public class RunAnalysis {
 	{
 		CurveSolver fitter = new CurveSolver();
 		final double coeffs[] = fitter.fit(points);
-		ArrayList<WeightedObservedPoint> test_points = new ArrayList<WeightedObservedPoint>();
-        for(int i=1;i < 25;i++)
-        {
-        	WeightedObservedPoint point = new WeightedObservedPoint(1.0, i, 1.731*i*i);
-        	test_points.add(point);
-        }
-        final double testCoeffs[] = fitter.fit(test_points);
+//		ArrayList<WeightedObservedPoint> test_points = new ArrayList<WeightedObservedPoint>();
+//        for(int i=1;i < 25;i++)
+//        {
+//        	WeightedObservedPoint point = new WeightedObservedPoint(1.0, i, 1.731*i*i);
+//        	test_points.add(point);
+//        }
+//        final double testCoeffs[] = fitter.fit(test_points);
         slope = coeffs[0];
         expo = coeffs[1];
         userLog.append("Curve Slope: " + coeffs[0] + " Exp: " + coeffs[1] + "\n");
@@ -312,5 +327,15 @@ public class RunAnalysis {
 	{
 		double[] results = {slope, expo, R2, calcYoungs(slope)};
 		return results;
+	}
+	
+	private int getLimit()
+	{
+		if(hasLimit)
+		{
+			double maxZ = impactZ + (limitPercent/100)*gelSize;
+			return getClosest(maxZ,0) + 1;
+		}
+		return dataMatrix.numRows;
 	}
 }
