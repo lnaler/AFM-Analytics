@@ -2,6 +2,11 @@ package ln.afm.gui;
 
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * Simple limited converter of voltages and distances
+ * @author Lynette Naler
+ *
+ */
 public class Converter {
 	private static ConcurrentHashMap<String, Double> zUnits = new ConcurrentHashMap<String,Double>(); //http://stackoverflow.com/questions/507602/how-can-i-initialise-a-static-map
     static {
@@ -51,9 +56,14 @@ public class Converter {
 		return 1.0;
 	}
 
+	/**
+	 * Returns a conversion number by which original number * 
+	 * @param oldUnits A string of the original units
+	 * @param newUnits A string of the units to convert to
+	 * @return the conversion number
+	 */
 	public static double[] getConversion(String[] oldUnits, String[] newUnits)
 	{
-		Converter conv = new Converter();
 		oldUnits[0] = oldUnits[0].toLowerCase();
 		newUnits[0] = newUnits[0].toLowerCase();
 		

@@ -2,37 +2,35 @@ package ln.afm.gui;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.EventQueue;
-import java.awt.event.ActionEvent;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Rectangle2D;
 import java.io.File;
 import java.io.IOException;
 import java.text.NumberFormat;
-import java.util.logging.Logger;
 
-import javax.swing.AbstractAction;
-import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JFileChooser;
+import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
-import javax.swing.JFormattedTextField;
-import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.border.BevelBorder;
-import javax.swing.border.Border;
-import javax.swing.filechooser.FileFilter;
-import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.border.SoftBevelBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
-import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.ValueAxis;
 import org.jfree.chart.fx.ChartViewer;
@@ -42,54 +40,26 @@ import org.jfree.chart.fx.overlay.CrosshairOverlayFX;
 import org.jfree.chart.plot.Crosshair;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.data.general.DatasetUtilities;
-import org.jfree.data.general.DefaultPieDataset;
-import org.jfree.data.general.PieDataset;
-import org.jfree.data.xy.XYDataset;
-import org.jfree.data.xy.XYSeries;
-import org.jfree.data.xy.XYSeriesCollection;
-import org.jfree.ui.RectangleAnchor;
 import org.jfree.ui.RectangleEdge;
-import org.jfree.ui.Size2D;
 
-import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.embed.swing.JFXPanel;
-import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.layout.StackPane;
-import javafx.scene.text.Font;
-import javafx.scene.text.Text;
-import javafx.stage.Stage;
+import javafx.scene.paint.Paint;
 import net.miginfocom.swing.MigLayout;
-import javafx.scene.paint.*;
-import javafx.scene.shape.Rectangle;
-import javax.swing.border.SoftBevelBorder;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.UIManager;
-import javax.swing.JFormattedTextField;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeEvent;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
-import org.jfree.chart.ChartPanel;
-import javax.swing.JMenuBar;
-import javax.swing.JToggleButton;
-import javax.swing.JCheckBox;
-import javax.swing.SwingConstants;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
-import java.awt.event.ItemListener;
-import java.awt.event.ItemEvent;
 
+/**
+ * GUI for AFM-Analytics program
+ * @author Lynette Naler
+ *
+ */
 public class AfmDisplay{
-	private static final Logger LOGGER = Logger.getLogger(AfmDisplay.class.getName() );
+	//private static final Logger LOGGER = Logger.getLogger(AfmDisplay.class.getName() ); //TODO logging
 	private static int FXWIDTH = 445;
 	private static int FXHEIGHT = 340;
 	
-	private JFrame frmAfmanalytics;
-	private final Action action = new SwingAction();
-	
+	private JFrame frmAfmanalytics;	
 	private JFormattedTextField sensFactorField;
 	private JFormattedTextField sprConstField;
 	private JFormattedTextField alphaField;
@@ -104,10 +74,8 @@ public class AfmDisplay{
 	private double zLimit;
 	private double gelThickness;
 	
-	private JTextArea log;
 	private File dataFile;
 	private CurveData data;
-	private boolean dataUpload;
 	private static boolean zUpdatedFX;
 	private boolean limitZ = false;
 	private JFormattedTextField indentLimit;
@@ -116,6 +84,12 @@ public class AfmDisplay{
 	private JTextField txtYoungsModulus;
 	private JTextField txtExp;
 	private JCheckBox chckbxSelectZ;
+	
+	@SuppressWarnings("unused")
+	private boolean dataUpload;
+	@SuppressWarnings("unused")
+	private JTextArea log;
+	private ChartPanel chartPanel;
 	
 	/**
 	 * Launch the application.
@@ -149,6 +123,7 @@ public class AfmDisplay{
 		alpha = 0;
 		impactZ = 0;
 		
+		//Key window setup
 		frmAfmanalytics = new JFrame();
 		frmAfmanalytics.setResizable(false);
 		frmAfmanalytics.getContentPane().setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 16));
@@ -158,12 +133,12 @@ public class AfmDisplay{
 		frmAfmanalytics.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frmAfmanalytics.getContentPane().setLayout(new MigLayout("", "[pref!][130.00px:130.00px][95.00px:95.00px,grow][49.00px:49.00px][72.00px:84.00px][30px:50.00px][30px:30px][72.00px:72.00px][72.00px:72.00px][35px:35.00px][30px:30px][30px:30px]", "[28px:28px][28px:28px][28px:28px][28px:28px][28px:28px][28px:28px][28px:28px][28px:28px][28:28][28px:28px][23px:23px][28px:28px][28px:28px][28px:28px][28px:28px][28px:28px][28px:28px]"));
 		
+		//Panel to display our main chart
 		JFXPanel fxPanel = new JFXPanel(); //https://docs.oracle.com/javase/8/javafx/interoperability-tutorial/swing-fx-interoperability.htm
 		fxPanel.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
 		fxPanel.setBackground(Color.WHITE);
-		//fxPanel.setMinimumSize(new Dimension(445, 340));
 		frmAfmanalytics.getContentPane().add(fxPanel, "flowx,cell 0 0 7 11,grow");
-		
+		//FXPanels have to be on a separate thread. Initializing it now.
 		Platform.runLater(new Runnable() {
             @Override
             public void run() {
@@ -175,11 +150,13 @@ public class AfmDisplay{
 		lblGelThickness.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 18));
 		frmAfmanalytics.getContentPane().add(lblGelThickness, "cell 1 11,alignx trailing");
 		
+		//Formatted field associated with gelThickness
 		gelThicknessField = new JFormattedTextField(NumberFormat.getNumberInstance());
 		gelThicknessField.setEditable(false);
 		gelThicknessField.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 18));
 		gelThicknessField.setValue(new Double(0));
 		frmAfmanalytics.getContentPane().add(gelThicknessField, "cell 2 11,growx");
+		//Update gelThickness if the field changes
 		gelThicknessField.getDocument().addDocumentListener(new DocumentListener() { //http://stackoverflow.com/questions/3953208/value-change-listener-to-jtextfield
 			public void changedUpdate(DocumentEvent e) {
 				updateVal();
@@ -196,7 +173,6 @@ public class AfmDisplay{
 				if(isNum)
 				{
 					gelThickness = ((Number)gelThicknessField.getValue()).doubleValue();
-					//log.append("New Sense Factor value is: " + sensFactor + "\n");
 				}
 			}
 		});
@@ -205,6 +181,22 @@ public class AfmDisplay{
 		lblnm2.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 16));
 		frmAfmanalytics.getContentPane().add(lblnm2, "cell 3 11,alignx left");
 		
+		//Scrollpane for our log (next)
+		JScrollPane scrollPane = new JScrollPane();
+		scrollPane.setViewportBorder(new SoftBevelBorder(BevelBorder.LOWERED, null, null, null, null));
+		frmAfmanalytics.getContentPane().add(scrollPane, "cell 8 12 4 4,grow");
+		
+		//Log that will display information to the user
+		JTextArea log = new JTextArea();
+		log.setFont(new java.awt.Font("Monospaced", java.awt.Font.PLAIN, 16));
+		log.setEditable(false);
+		log.setForeground(Color.BLACK);
+		scrollPane.setViewportView(log);
+		
+		//Now that we have a log to pass, we can instantiate our data //TODO fix this somehow
+		data = new CurveData(log);
+		
+		//Clears the voltage-distance chart (raw data)
 		JButton btnClearData = new JButton("Clear");
 		btnClearData.setEnabled(false);
 		btnClearData.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 18));
@@ -222,7 +214,7 @@ public class AfmDisplay{
 			}
 		});
 		
-		
+		//View the voltage-distance chart (raw data)
 		JButton btnView = new JButton("View");
 		btnView.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 18));
 		btnView.setEnabled(false);
@@ -244,23 +236,13 @@ public class AfmDisplay{
 			}
 		});
 		
-		ChartPanel chartPanel = new ChartPanel((JFreeChart) null);
+		//Displays Force Indentation chart (processed data)
+		chartPanel = new ChartPanel((JFreeChart) null);
 		chartPanel.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
 		chartPanel.setBackground(Color.WHITE);
 		frmAfmanalytics.getContentPane().add(chartPanel, "cell 7 0 5 11,grow");
 		
-		JScrollPane scrollPane = new JScrollPane();
-		scrollPane.setViewportBorder(new SoftBevelBorder(BevelBorder.LOWERED, null, null, null, null));
-		frmAfmanalytics.getContentPane().add(scrollPane, "cell 8 12 4 4,grow");
-		
-		JTextArea log = new JTextArea();
-		log.setFont(new java.awt.Font("Monospaced", java.awt.Font.PLAIN, 16));
-		log.setEditable(false);
-		log.setForeground(Color.BLACK);
-		scrollPane.setViewportView(log);
-		
-		data = new CurveData(log);
-		
+		//Runs the  core analysis
 		JButton btnRun = new JButton("Run");
 		btnRun.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 18));
 		btnRun.setEnabled(false);
@@ -272,9 +254,12 @@ public class AfmDisplay{
 				if(isReady)
 				{
 					double[] inputs = getInputs();
+					//sets up the analyst
 					RunAnalysis analyst = new RunAnalysis(data, log, inputs, limitZ);
+					//get the force indentation chart and set the chart panel
 					JFreeChart forceInd = analyst.run();
 					chartPanel.setChart(forceInd);
+					//Display results
 					updateResults(analyst.getResults());
 				}
 				if(!isReady)
@@ -284,7 +269,9 @@ public class AfmDisplay{
 			}
 		});
 		
+		//Clears the Force-Distance Chart //TODO Fix this
 		JButton btnClearChart = new JButton("Clear Chart");
+		btnClearChart.setEnabled(false);
 		btnClearChart.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 18));
 		frmAfmanalytics.getContentPane().add(btnClearChart, "cell 8 11 2 1");
 		btnClearChart.addMouseListener(new MouseAdapter() {
@@ -294,6 +281,7 @@ public class AfmDisplay{
 			}
 		});
 		
+		//Clears the log
 		JButton btnClearLog = new JButton("Clear Log");
 		btnClearLog.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 18));
 		frmAfmanalytics.getContentPane().add(btnClearLog, "cell 10 11 2 1,alignx right");
@@ -308,11 +296,13 @@ public class AfmDisplay{
 		lblSensitivityFactor.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 18));
 		frmAfmanalytics.getContentPane().add(lblSensitivityFactor, "cell 1 12,alignx right");
 		
+		//Formatted field associated with sensFactor
 		sensFactorField = new JFormattedTextField(NumberFormat.getNumberInstance());
 		sensFactorField.setValue(new Double(0));
 		sensFactorField.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 18));
 		frmAfmanalytics.getContentPane().add(sensFactorField, "cell 2 12,growx");
 		sensFactorField.setColumns(5);
+		//Update sensFactor if field is changed
 		sensFactorField.getDocument().addDocumentListener(new DocumentListener() { //http://stackoverflow.com/questions/3953208/value-change-listener-to-jtextfield
 			public void changedUpdate(DocumentEvent e) {
 				updateVal();
@@ -329,7 +319,6 @@ public class AfmDisplay{
 				if(isNum)
 				{
 					sensFactor = ((Number)sensFactorField.getValue()).doubleValue();
-					//log.append("New Sense Factor value is: " + sensFactor + "\n");
 				}
 			}
 		});
@@ -338,11 +327,13 @@ public class AfmDisplay{
 		lblnmv.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 16));
 		frmAfmanalytics.getContentPane().add(lblnmv, "cell 3 12,alignx left");
 		
+		//Do we want to limit how much of the data we use? Defaults to 20%
 		JCheckBox chckbxIndentThreshold = new JCheckBox("Limit Indent %");
 		chckbxIndentThreshold.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 18));
 		frmAfmanalytics.getContentPane().add(chckbxIndentThreshold, "cell 4 12 3 1");
 		chckbxIndentThreshold.addItemListener(new ItemListener() {
 			public void itemStateChanged(ItemEvent e) {
+				//If we do want to limit it, enable relevant fields
 				if(e.getStateChange() == ItemEvent.SELECTED)
 				{
 					limitZ = true;
@@ -358,6 +349,7 @@ public class AfmDisplay{
 			}
 		});
 		
+		//Formatted field associated with zLimit
 		indentLimit = new JFormattedTextField(NumberFormat.getNumberInstance());
 		indentLimit.setValue(new Double(20));
 		zLimit = 20d;
@@ -365,6 +357,7 @@ public class AfmDisplay{
 		frmAfmanalytics.getContentPane().add(indentLimit, "cell 7 12,growx");
 		indentLimit.setEditable(false);
 		indentLimit.setColumns(10);
+		//We need to update zLimit if indentLimit is changed
 		indentLimit.getDocument().addDocumentListener(new DocumentListener() { //http://stackoverflow.com/questions/3953208/value-change-listener-to-jtextfield
 			public void changedUpdate(DocumentEvent e) {
 				updateVal();
@@ -381,7 +374,6 @@ public class AfmDisplay{
 				if(isNum)
 				{
 					zLimit = ((Number)indentLimit.getValue()).doubleValue();
-					//log.append("New Alpha value is: " + alpha + "\n");
 				}
 			}
 		});
@@ -390,11 +382,13 @@ public class AfmDisplay{
 		lblSpringConstant.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 18));
 		frmAfmanalytics.getContentPane().add(lblSpringConstant, "cell 1 13,alignx right");
 		
+		//Formatted field associated with sprConst
 		sprConstField = new JFormattedTextField(NumberFormat.getNumberInstance());
 		sprConstField.setValue(new Double(0));
 		sprConstField.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 18));
 		frmAfmanalytics.getContentPane().add(sprConstField, "cell 2 13,growx");
 		sprConstField.setColumns(5);
+		//If it updates, we need to change sprConst
 		sprConstField.getDocument().addDocumentListener(new DocumentListener() { //http://stackoverflow.com/questions/3953208/value-change-listener-to-jtextfield
 			public void changedUpdate(DocumentEvent e) {
 				updateVal();
@@ -411,7 +405,6 @@ public class AfmDisplay{
 				if(isNum)
 				{
 					sprConst = ((Number)sprConstField.getValue()).doubleValue();
-					//log.append("New Spring Constant value is: " + sprConst + "\n");
 				}
 			}
 		});
@@ -420,6 +413,7 @@ public class AfmDisplay{
 		lblnm.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 16));
 		frmAfmanalytics.getContentPane().add(lblnm, "cell 3 13,alignx left");
 		
+		//Results field for slope.
 		txtSlope = new JTextField();
 		txtSlope.setBackground(UIManager.getColor("Button.background"));
 		txtSlope.setEditable(false);
@@ -429,6 +423,7 @@ public class AfmDisplay{
 		frmAfmanalytics.getContentPane().add(txtSlope, "cell 4 13 2 1,growx");
 		txtSlope.setColumns(10);
 		
+		//Results field for exponent.
 		txtExp = new JTextField();
 		txtExp.setBackground(UIManager.getColor("Button.background"));
 		txtExp.setEditable(false);
@@ -442,11 +437,13 @@ public class AfmDisplay{
 		lblAlpha.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 18));
 		frmAfmanalytics.getContentPane().add(lblAlpha, "cell 1 14,alignx right");
 		
+		//Formatted field associated with alpha
 		alphaField = new JFormattedTextField(NumberFormat.getNumberInstance());
 		alphaField.setValue(new Double(0));
 		alphaField.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 18));
 		frmAfmanalytics.getContentPane().add(alphaField, "cell 2 14,growx");
 		alphaField.setColumns(10);
+		//We want to update alpha if field is changed
 		alphaField.getDocument().addDocumentListener(new DocumentListener() { //http://stackoverflow.com/questions/3953208/value-change-listener-to-jtextfield
 			public void changedUpdate(DocumentEvent e) {
 				updateVal();
@@ -463,7 +460,6 @@ public class AfmDisplay{
 				if(isNum)
 				{
 					alpha = ((Number)alphaField.getValue()).doubleValue();
-					//log.append("New Alpha value is: " + alpha + "\n");
 				}
 			}
 		});
@@ -472,6 +468,7 @@ public class AfmDisplay{
 		lbldeg.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 16));
 		frmAfmanalytics.getContentPane().add(lbldeg, "cell 3 14,alignx left");
 		
+		//Results field for R-Squared value
 		txtRsquared = new JTextField();
 		txtRsquared.setBackground(UIManager.getColor("Button.background"));
 		txtRsquared.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 18));
@@ -481,16 +478,19 @@ public class AfmDisplay{
 		frmAfmanalytics.getContentPane().add(txtRsquared, "cell 4 14 4 1,growx");
 		txtRsquared.setColumns(10);
 		
+		//Do we want to automatically run without Z0 input? No. Not yet.
 		chckbxSelectZ = new JCheckBox("   Select Z0");
 		chckbxSelectZ.setEnabled(false);
 		chckbxSelectZ.setSelected(true);
 		chckbxSelectZ.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 18));
 		frmAfmanalytics.getContentPane().add(chckbxSelectZ, "cell 1 15,alignx right");
 		
+		//Formatted field associated with ImpactZ
 		impactZField.setValue(new Double(0));
 		impactZField.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 18));
 		frmAfmanalytics.getContentPane().add(impactZField, "cell 2 15,growx");
 		impactZField.setColumns(10);
+		//If this field changes, we want to know
 		impactZField.getDocument().addDocumentListener(new DocumentListener() { //http://stackoverflow.com/questions/3953208/value-change-listener-to-jtextfield
 			public void changedUpdate(DocumentEvent e) {
 				updateVal();
@@ -506,28 +506,29 @@ public class AfmDisplay{
 				boolean isNum = FileParser.isDouble(impactZField.getText());
 				if(isNum)
 				{
+					//If it was update by the textbox
 					if(!zUpdatedFX)
 					{
 						double tempVal = ((Number)impactZField.getValue()).doubleValue();
 						updateClickedZ(tempVal);
 						impactZ = tempVal;
 					}
+					//If it was updated by the crosshairs
 					if(zUpdatedFX)
 					{
 						impactZ = clickedZ;
 						zChanged(false);
 					}
-					//log.append("New Impact Z value is: " + impactZ + "\n");
 				}
 			}
 		
 		});
 
-		
 		JLabel lblnm_1 = new JLabel("(nm)");
 		lblnm_1.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 16));
 		frmAfmanalytics.getContentPane().add(lblnm_1, "cell 3 15,alignx left");
 		
+		//Result field for Young's Modulus
 		txtYoungsModulus = new JTextField();
 		txtYoungsModulus.setBackground(UIManager.getColor("Button.background"));
 		txtYoungsModulus.setEditable(false);
@@ -537,12 +538,14 @@ public class AfmDisplay{
 		frmAfmanalytics.getContentPane().add(txtYoungsModulus, "cell 4 15 4 1,grow");
 		txtYoungsModulus.setColumns(10);
 		
+		//displays the directory of the file
 		JTextField dirPane = new JTextField();
 		dirPane.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 18));
 		dirPane.setEditable(false);
 		dirPane.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
 		frmAfmanalytics.getContentPane().add(dirPane, "cell 1 16 9 1,growx,aligny center");
 		
+		//Browses to and reads in a selected file
 		JButton btnBrowse = new JButton("  Browse  ");
 		btnBrowse.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 18));
 		frmAfmanalytics.getContentPane().add(btnBrowse, "cell 10 16 2 1,alignx right");
@@ -550,26 +553,29 @@ public class AfmDisplay{
 			@Override
 			public void mouseClicked(MouseEvent arg0) {
 				JFileChooser chooser = new JFileChooser();
-				FileFilter filter = new FileNameExtensionFilter(
-				    "TXT files", "txt");
-				chooser.setFileFilter(filter);
-				//chooser.setCurrentDirectory("<YOUR DIR COMES HERE>");
+				//FileFilter filter = new FileNameExtensionFilter("TXT files", "txt"); //Not all files are .txt
+				//chooser.setFileFilter(filter);
+				//chooser.setCurrentDirectory("<YOUR DIR COMES HERE>"); //TODO
 				int returnVal = chooser.showOpenDialog(chooser);
+				//if it's a valid file, we'll load it in
 				if(returnVal == JFileChooser.APPROVE_OPTION) {
+				   data = new CurveData(log);
 				   log.append("File approved");
 				   dataFile = chooser.getSelectedFile();
 				   File dataDir = chooser.getCurrentDirectory();
 				   dirPane.setText(dataDir.toString()+dataFile.toString());
 				   FileParser fP = new FileParser(log, data);
+				   //see if we can parse out some data
 				   try {
 					dataUpload = fP.readFile(dataFile);
 					data = fP.getData();
 				   } catch (IOException e){
 					e.printStackTrace();
+					AfmDisplay.infoBox("Error parsing file.", "ERROR");
 				   }
 				   log.append("File has been processed successfully." + "\n");
+				   //Now that we have data, we can view or run it
 				   btnView.setEnabled(true);
-				   //btnClearData.setEnabled(true);
 				   btnRun.setEnabled(true);
 				}
 			}
@@ -577,9 +583,12 @@ public class AfmDisplay{
 		
 	}
 	
-	private boolean inputsChecked()
+	/**
+	 * Check if the inputs are numbers. Defunct. To be removed
+	 * @return if four of core fields are numbers
+	 */
+	private boolean inputsChecked() //TODO A bit defunct, change accordingly
 	{
-		//log.append("Checking inputs..." + "\n");
 		boolean sff = FileParser.isDouble(sensFactorField.getText());
 		boolean scf = FileParser.isDouble(sprConstField.getText());
 		boolean af = FileParser.isDouble(alphaField.getText());
@@ -587,96 +596,106 @@ public class AfmDisplay{
 		return(sff && scf & af & izf);
 	}
 	
+	/**
+	 * Updates the value of clickedZ
+	 * @param newVal The value that clickedZ will be updated to
+	 */
 	private static void updateClickedZ(double newVal)
 	{
 		clickedZ = newVal;
 	}
 	
+	/**
+	 * Puts the inputs in a double array {sensFactor, sprConst, alpha, impactZ, zLimit, gelThickness}
+	 * @return The inputs in a double array
+	 */
 	private double[] getInputs()
 	{
 		double[] result = {sensFactor, sprConst, alpha, impactZ, zLimit, gelThickness};
 		return result;
 	}
-
-	private class SwingAction extends AbstractAction {
-		public SwingAction() {
-			putValue(NAME, "SwingAction");
-			putValue(SHORT_DESCRIPTION, "Some short description");
-		}
-		public void actionPerformed(ActionEvent e) {
-		}
-	}
 	
-	public void logUpdate(String update)
-	{
-		log.append(update);
-	}
-	
+	/**
+	 * Updates the values on the GUI to display the results
+	 * @param results Results to be displayed
+	 */
 	private void updateResults(double[] results)
     {	
     	txtSlope.setText(String.format("Slope: %,.1f", results[0]));
     	txtExp.setText(String.format("Exp: %.3f", results[1]));
-    	txtRsquared.setText(String.format("R-Squared: %.2f", results[2]));
-    	txtYoungsModulus.setText(String.format("Young's Modulus: %,.1f"+"kPa", results[3]));
+    	txtRsquared.setText(String.format("R-Squared: %.3f", results[2]));
+    	txtYoungsModulus.setText(String.format("Young's Modulus: %,.3f"+"kPa", results[3]));
     }
 	
-//	private static PieDataset createDataset( ) 
-//	   {
-//	      DefaultPieDataset dataset = new DefaultPieDataset( );
-//	      dataset.setValue( "IPhone 5s" , new Double( 20 ) );  
-//	      dataset.setValue( "SamSung Grand" , new Double( 20 ) );   
-//	      dataset.setValue( "MotoG" , new Double( 40 ) );    
-//	      dataset.setValue( "Nokia Lumia" , new Double( 10 ) );  
-//	      return dataset;         
-//	   }
-	
+	/**
+	 * Updates JavaFX panel with empty Scene
+	 * @param fxPanel Panel to be updated
+	 */
 	private static void initFX(JFXPanel fxPanel) {
         // This method is invoked on the JavaFX thread
         Scene scene = createScene();
         fxPanel.setScene(scene);
-        //fxPanel.setMinimumSize(new Dimension(FXWIDTH, FXHEIGHT));
     }
 	
+	/**
+	 * Updates JavaFX panel with chart
+	 * @param fxPanel Panel to be updated
+	 * @param inChart Chart to be displayed
+	 */
 	private static void initFX(JFXPanel fxPanel, JFreeChart inChart) {
         // This method is invoked on the JavaFX thread
         Scene scene = createScene(inChart);
         fxPanel.setScene(scene);
-        //fxPanel.setMinimumSize(new Dimension(FXWIDTH, FXHEIGHT));
     }
 	
+	/**
+	 * Constructs a blank Scene
+	 * @return Scene to be displayed
+	 */
     private static Scene createScene() {
-        Group  root  =  new  Group();
         Scene  scene  =  new  Scene(new ChartDisplay(), FXWIDTH, FXHEIGHT);
         return (scene);
     }
     
+    /**
+     * Constructs a Scene given a Chart
+     * @param inChart Chart to be displayed
+     * @return Scene to be displayed
+     */
     private static Scene createScene(JFreeChart inChart){
-    	Group  root  =  new  Group();
         Scene  scene  =  new  Scene(new ChartDisplay(inChart), FXWIDTH, FXHEIGHT);
-    	//Scene scene = new Scene(new ChartDisplay(inChart));
         return (scene);
     }
     
+    /**
+     * Updates zUpdatedFX if the JavaFX thread updated the Z-location (from crosshairs)
+     * @param yesno Whether or not the value has been updated
+     */
     private static void zChanged(boolean yesno){
     	zUpdatedFX = yesno;
     }
     
-    static class ChartDisplay extends StackPane implements ChartMouseListenerFX { //From JFreeChart CrosshairOverlayFXDemo1
+    /**
+     * 
+     * Adapted from: JFreeChart CrosshairOverlayFXDemo1
+     *
+     */
+    static class ChartDisplay extends StackPane implements ChartMouseListenerFX {
         
         private ChartViewer chartViewer;
         private Crosshair xCrosshair;
         private Crosshair yCrosshair;
         private JFreeChart chart;
     
-        public ChartDisplay()
-        {
+        public ChartDisplay() {
         	//Displays basic white box
         }
         
-        
+        /**
+         * Displays a chart in the FXPanel with crosshair overlays
+         * @param inChart The Chart to be displayed
+         */
         public ChartDisplay(JFreeChart inChart) {
-            //XYDataset dataset = createDataset();
-            //JFreeChart chart = createChart(dataset); 
         	chart = inChart;
             this.chartViewer = new ChartViewer(chart);
             this.chartViewer.addChartMouseListener(this);
@@ -704,13 +723,15 @@ public class AfmDisplay{
             });
         }
 
+        /*
+         *  If a user uses the crosshairs to find a location and selects it, returns the x value
+         */
         @Override
         public void chartMouseClicked(ChartMouseEventFX event) {
         	double xValue = this.xCrosshair.getValue();
         	SwingUtilities.invokeLater(new Runnable() {
         	    @Override
         	    public void run() {
-        	    	//impactZField.setText("Woo");
         	    	updateClickedZ(xValue);
         	    	zChanged(true);
         	    	impactZField.setText(String.format("%,.3f", xValue));
@@ -718,6 +739,9 @@ public class AfmDisplay{
         	});
         }
 
+        /*
+         * Tracks user mouse movement and moves crosshairs appropriately
+         */
         @Override
         public void chartMouseMoved(ChartMouseEventFX event) {
             Rectangle2D dataArea = this.chartViewer.getCanvas().getRenderingInfo().getPlotInfo().getDataArea();
@@ -737,21 +761,11 @@ public class AfmDisplay{
         
     }
     
-    public static XYDataset createDataset() {
-        XYSeries series = new XYSeries("S1");
-        for (int x = 0; x < 10; x++) {
-            series.add(x, x + Math.random() * 4.0);
-        }
-        XYSeriesCollection dataset = new XYSeriesCollection(series);
-        return dataset;
-    }
-
-    public static JFreeChart createChart(XYDataset dataset) {
-        JFreeChart chart = ChartFactory.createXYLineChart(
-                "CrosshairOverlayDemo1", "X", "Y", dataset);
-        return chart;
-    }
-    
+    /**
+     * Converts Color to Paint
+     * @param c The Color to you want to Paint
+     * @return the Paint with your color
+     */
     public static Paint toPaint(Color c) //http://stackoverflow.com/questions/30466405/java-convert-java-awt-color-to-javafx-scene-paint-color
     {
     	int r = c.getRed();
@@ -762,22 +776,13 @@ public class AfmDisplay{
     	return javafx.scene.paint.Color.rgb(r, g, b, opacity);
     }
     
+    /**
+     * Notify the user of information with popup
+     * @param infoMessage Message to be displayed
+     * @param titleBar The title of the popup
+     */
     public static void infoBox(String infoMessage, String titleBar) //http://stackoverflow.com/questions/7080205/popup-message-boxes
     {
         JOptionPane.showMessageDialog(null, infoMessage, "Notice: " + titleBar, JOptionPane.INFORMATION_MESSAGE);
     }
-    
-//    private static int roundDouble(double a)
-//    {
-//    	Double round = 0d;
-//    	if((Math.ceil(a) - a) > 0.5)
-//    	{
-//    		round = Math.ceil(a);
-//    	}
-//    	else if((Math.ceil(a) - a) <= 0.5)
-//    	{
-//    		round = Math.floor(a);
-//    	}
-//    	return round.intValue();
-//    }
 }

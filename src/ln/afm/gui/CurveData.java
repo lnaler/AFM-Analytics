@@ -1,8 +1,9 @@
 package ln.afm.gui;
 
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Logger;
+//import java.util.logging.Logger;
 
 import javax.swing.JTextArea;
 
@@ -13,8 +14,13 @@ import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
+/**
+ * Data class that holds the user raw data and conditions
+ * @author Lynette Naler
+ *
+ */
 public class CurveData {
-	private static final Logger LOGGER = Logger.getLogger(CurveData.class.getName() ); //TODO
+	//private static final Logger LOGGER = Logger.getLogger(CurveData.class.getName() ); //TODO
 	
 	private double sensFactor;
 	private double sprConstant;
@@ -27,10 +33,18 @@ public class CurveData {
 	private String[] units;
 	private JTextArea userLog;
 	
+	/**
+	 * Constructer for CurveData
+	 * @param log Log that will be used to display information
+	 */
 	public CurveData(JTextArea log){
 		userLog = log;
 	}
 	
+	/**
+	 * Checks if values have been set. All values should be > 0.
+	 * @return true if it is ready, false otherwise
+	 */
 	public boolean isReady(){
 		if(sensFactor == 0)
 		{
@@ -78,6 +92,11 @@ public class CurveData {
 		impactZ = newImpactZ;
 	}
 	
+	/**
+	 * Attempts to append a pair of values to the data
+	 * @param value the Z (0) and Volt (1) values to be appended
+	 * @return true if append is successful
+	 */
 	public boolean appendValues(double[] value)
 	{
 		if(value.length > 2)
@@ -102,6 +121,10 @@ public class CurveData {
 		units = newUnits;
 	}
 
+	/**
+	 * Given conversion values, apply the conversion
+	 * @param conversions conversion * current value = new value
+	 */
 	private void multiply(double[] conversions)
 	{
 		for(int i=0; i < zdistValues.size(); i++)
@@ -111,6 +134,11 @@ public class CurveData {
 		}
 	}
 	
+	/**
+	 * Change the data to reflect different units
+	 * @param newUnits Units to be converted to
+	 * @return true if successful or conversion not need
+	 */
 	public boolean changeUnits(String[] newUnits)
 	{
 		boolean zUnits = units[0].equals(newUnits[0]);
@@ -123,9 +151,13 @@ public class CurveData {
 		double[] conversions = Converter.getConversion(units, newUnits);
 		multiply(conversions);
 		units = newUnits;
-		return true;
+		return true; //TODO An instance that returns false?
 	}
 	
+	/**
+	 * Creates a XYDataset of the data
+	 * @return XYDataset of the data
+	 */
 	private XYDataset getXYData()
 	{
 		XYSeries data = new XYSeries("test");
@@ -138,6 +170,10 @@ public class CurveData {
 	    return dataset;
 	}
 	
+	/**
+	 * Generates a chart of the data
+	 * @return Chart of the data
+	 */
 	public JFreeChart getXYChart()
 	{
 		String xtitle = "Indentation" + " (" + units[0] + ")";
@@ -151,10 +187,13 @@ public class CurveData {
 		         false, //include legend
 		         true,
 		         false);
+		xylineChart.setBackgroundPaint(Color.WHITE);
 		return xylineChart;
 	}
 	
-	
+	/**
+	 * Prints out the data to the user log
+	 */
 	public void printData()
 	{
 		userLog.append("Printing current data..." + "\n");
@@ -165,6 +204,10 @@ public class CurveData {
 		}
 	}
 	
+	/**
+	 * Returns a double[][] array of the data
+	 * @return double[][] array of the data
+	 */
 	public double[][] toArray()
 	{
 		double[][] dataArray = new double[2][zdistValues.size()];
