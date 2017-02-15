@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project default="create_run_jar" name="Create Runnable Jar for Project AFM-Analytics with Jar-in-Jar Loader">
+    <!--this file was created by Eclipse Runnable JAR file Export Wizard-->
+    <!--ANT 1.7 is required-->
+    <!--define folder properties-->
+    <property name="dir.buildfile" value="."/>
+    <property name="dir.workspace" value="${dir.buildfile}/../.."/>
+    <property name="dir.jarfile" value="${dir.workspace}/AFM-Analytics/dist"/>
+    <target name="create_run_jar">
+        <jar destfile="${dir.jarfile}/AFM-Analytics-v0.1.0.jar">
+            <manifest>
+                <attribute name="Main-Class" value="org.eclipse.jdt.internal.jarinjarloader.JarRsrcLoader"/>
+                <attribute name="Rsrc-Main-Class" value="ln.afm.gui.AfmDisplay"/>
+                <attribute name="Class-Path" value="."/>
+                <attribute name="Rsrc-Class-Path" value="./ miglayout15-swing.jar jcommon-1.0.23.jar fxgraphics2d-1.5.jar jfreechart-1.5.0.jar EJML-core-0.30.jar EJML-core-0.30-sources.jar EJML-dense64-0.30.jar EJML-dense64-0.30-sources.jar EJML-denseC64-0.30.jar EJML-denseC64-0.30-sources.jar EJML-equation-0.30.jar EJML-equation-0.30-sources.jar EJML-simple-0.30.jar EJML-simple-0.30-sources.jar commons-math3-3.6.1.jar commons-math3-3.6.1-javadoc.jar commons-math3-3.6.1-sources.jar commons-math3-3.6.1-tests.jar commons-math3-3.6.1-test-sources.jar commons-math3-3.6.1-tools.jar jgoodies-forms-1.8.0.jar core-0.30.jar ddogleg-0.10.jar ddogleg-0.10-sources.jar dense64-0.30.jar equation-0.30.jar simple-0.30.jar"/>
+            </manifest>
+            <zipfileset src="${dir.workspace}/lib/jar-in-jar-loader.zip"/>
+            <fileset dir="${dir.workspace}/AFM-Analytics/bin"/>
+            <zipfileset dir="${dir.workspace}/lib" includes="miglayout15-swing.jar"/>
+            <zipfileset dir="${dir.workspace}/jfreechart-master/jfreechart-master/lib" includes="jcommon-1.0.23.jar"/>
+            <zipfileset dir="${dir.workspace}/jfreechart-master/jfreechart-master/lib" includes="fxgraphics2d-1.5.jar"/>
+            <zipfileset dir="${dir.workspace}/jfreechart-master/jfreechart-master/lib" includes="jfreechart-1.5.0.jar"/>
+            <zipfileset dir="${dir.workspace}/ejml-v0.30-libs" includes="EJML-core-0.30.jar"/>
+            <zipfileset dir="${dir.workspace}/ejml-v0.30-libs" includes="EJML-core-0.30-sources.jar"/>
+            <zipfileset dir="${dir.workspace}/ejml-v0.30-libs" includes="EJML-dense64-0.30.jar"/>
+            <zipfileset dir="${dir.workspace}/ejml-v0.30-libs" includes="EJML-dense64-0.30-sources.jar"/>
+            <zipfileset dir="${dir.workspace}/ejml-v0.30-libs" includes="EJML-denseC64-0.30.jar"/>
+            <zipfileset dir="${dir.workspace}/ejml-v0.30-libs" includes="EJML-denseC64-0.30-sources.jar"/>
+            <zipfileset dir="${dir.workspace}/ejml-v0.30-libs" includes="EJML-equation-0.30.jar"/>
+            <zipfileset dir="${dir.workspace}/ejml-v0.30-libs" includes="EJML-equation-0.30-sources.jar"/>
+            <zipfileset dir="${dir.workspace}/ejml-v0.30-libs" includes="EJML-simple-0.30.jar"/>
+            <zipfileset dir="${dir.workspace}/ejml-v0.30-libs" includes="EJML-simple-0.30-sources.jar"/>
+            <zipfileset dir="${dir.workspace}/commons-math3-3.6.1-bin/commons-math3-3.6.1" includes="commons-math3-3.6.1.jar"/>
+            <zipfileset dir="${dir.workspace}/commons-math3-3.6.1-bin/commons-math3-3.6.1" includes="commons-math3-3.6.1-javadoc.jar"/>
+            <zipfileset dir="${dir.workspace}/commons-math3-3.6.1-bin/commons-math3-3.6.1" includes="commons-math3-3.6.1-sources.jar"/>
+            <zipfileset dir="${dir.workspace}/commons-math3-3.6.1-bin/commons-math3-3.6.1" includes="commons-math3-3.6.1-tests.jar"/>
+            <zipfileset dir="${dir.workspace}/commons-math3-3.6.1-bin/commons-math3-3.6.1" includes="commons-math3-3.6.1-test-sources.jar"/>
+            <zipfileset dir="${dir.workspace}/commons-math3-3.6.1-bin/commons-math3-3.6.1" includes="commons-math3-3.6.1-tools.jar"/>
+            <zipfileset dir="${dir.workspace}/lib" includes="jgoodies-forms-1.8.0.jar"/>
+            <zipfileset dir="${dir.workspace}/ddogleg-v0.10-libs" includes="core-0.30.jar"/>
+            <zipfileset dir="${dir.workspace}/ddogleg-v0.10-libs" includes="ddogleg-0.10.jar"/>
+            <zipfileset dir="${dir.workspace}/ddogleg-v0.10-libs" includes="ddogleg-0.10-sources.jar"/>
+            <zipfileset dir="${dir.workspace}/ddogleg-v0.10-libs" includes="dense64-0.30.jar"/>
+            <zipfileset dir="${dir.workspace}/ddogleg-v0.10-libs" includes="equation-0.30.jar"/>
+            <zipfileset dir="${dir.workspace}/ddogleg-v0.10-libs" includes="simple-0.30.jar"/>
+        </jar>
+    </target>
+	<property name="dir.launch4j" location="C:/Program Files (x86)/Launch4j/" />
+	<taskdef name="launch4j"
+    	classname="net.sf.launch4j.ant.Launch4jTask"
+    	classpath="${dir.launch4j}/launch4j.jar:${dir.launch4j}/lib/xstream.jar" />
+	<launch4j configFile = "${dir.buildfile}/exe-config.xml" />
+	<taskdef name="bundleapp" 
+		classname="com.oracle.appbundler.AppBundlerTask"
+		classpath="${ant.home}/lib/appbundler-1.0.jar"/>
+    <bundleapp outputdirectory="${dir.jarfile}/"
+        name="AFM-Analytics v0.1.0"
+        displayname="AFM-Analytics"
+        identifier="ln.afm.gui.AfmDisplay"
+        mainclassname="${dir.workspace}/AFM-Analytics/src/ln/afm/gui/AfmDisplay">
+        <classpath file="${dir.jarfile}/AFM-Analytics-v0.1.0.jar" />
+    </bundleapp>
+</project>

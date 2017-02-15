@@ -5,25 +5,38 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Scanner;
-import java.util.logging.Logger;
-
+//import java.util.logging.Logger;
 import javax.swing.JTextArea;
 
+/**
+ * Parses a file and reads in the data
+ * @author Lynette Naler
+ *
+ */
 public class FileParser {
-	private static final Logger LOGGER = Logger.getLogger(FileParser.class.getName() ); //TODO Implement logging
+	//private static final Logger LOGGER = Logger.getLogger(FileParser.class.getName() ); //TODO Implement logging
 	private JTextArea userLog;
 	private CurveData userCurve;
 	private String[] units;
 	//final static Charset ENCODING = StandardCharsets.UTF_8;
 	
 	
-	
+	/**
+	 * Constructor for FileParser
+	 * @param log The user log that updates will be printed to
+	 * @param curve The CurveData to be appended to
+	 */
 	public FileParser(JTextArea log, CurveData curve) {
 		userLog = log;
-		userCurve = curve;
-		userCurve.setAlpha(5.0);
+		userCurve = curve; //Don't think this is actually necessary
 	}
 
+	/**
+	 * Reads in and parses a file
+	 * @param inFile File to be parsed
+	 * @return True if file successfully parsed
+	 * @throws IOException
+	 */
 	public boolean readFile (File inFile) throws IOException
 	{
 	    try (BufferedReader reader = new BufferedReader(new FileReader(inFile))){
@@ -61,12 +74,16 @@ public class FileParser {
 	    return true;
 	}
 	
-	public String[] checkUnits(String firstLine) //TODO Check error formatting
+	/**
+	 * Checks if the first line contains units
+	 * @param firstLine The first line in the file
+	 * @return String[] of the units
+	 */
+	public String[] checkUnits(String firstLine) //TODO Check error formatting, check unit
 	{
 		userLog.append("Checking for units..." + "\n");
 		String[] input = firstLine.split("\t");
 		input = removeSpaces(input);
-		//userLog.append("Just received: " + input[0] + " + " + input[1] + "\n");
 		if(isDouble(input[0]) || isDouble(input[1]))
 		{
 			return null;
@@ -74,6 +91,11 @@ public class FileParser {
 		return input;
 	}
 	
+	/**
+	 * Processes a line from the file and adds to our data
+	 * @param line Line to be processed
+	 * @return True if processing was successful
+	 */
 	private boolean processLine(String line) //TODO Error handling: Should be a number, error if not
 	{
 		String dataStr[] = line.split("\t");
@@ -90,6 +112,11 @@ public class FileParser {
 		return false;
 	}
 	
+	/**
+	 * Removes all spaces from a string
+	 * @param in String to be edited
+	 * @return String without spaces
+	 */
 	private String[] removeSpaces(String[] in)
 	{
 		for(int i = 0; i < in.length; i++)
@@ -99,11 +126,16 @@ public class FileParser {
 		return in;
 	}
 	
-//	public static boolean isDouble(String s) {
-//	    return isDouble(s,10);
-//	}
-	
+	/**
+	 * Checks if a string is a double
+	 * @param s String to be checked
+	 * @return True if it is a double
+	 */
 	public static boolean isDouble(String s) { //http://stackoverflow.com/questions/5439529/determine-if-a-string-is-an-integer-in-java
+		if(s == null)
+		{
+			return false;
+		}
 	    Scanner sc = new Scanner(s.trim());
 	    if(!sc.hasNextDouble())
 	    {
@@ -118,6 +150,10 @@ public class FileParser {
 	    return result;
 	}
 
+	/**
+	 * Returns the data read
+	 * @return CurveData from the file read
+	 */
 	public CurveData getData()
 	{
 		return userCurve;
