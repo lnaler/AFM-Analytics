@@ -2,7 +2,6 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/jre1.8.0_121"/>
-	<classpathentry kind="lib" path="miglayout15-swing.jar" sourcepath="miglayout-src.zip"/>
 	<classpathentry kind="lib" path="C:/Users/lbnal/eclipse/workspace/jfreechart-master/jfreechart-master/lib/jcommon-1.0.23.jar"/>
 	<classpathentry kind="lib" path="/jfreechart-master/jfreechart-master/lib/fxgraphics2d-1.5.jar"/>
 	<classpathentry kind="lib" path="/jfreechart-master/jfreechart-master/lib/jfreechart-1.5.0.jar"/>
@@ -22,12 +21,14 @@
 	<classpathentry kind="lib" path="C:/Users/lbnal/eclipse/workspace/commons-math3-3.6.1-bin/commons-math3-3.6.1/commons-math3-3.6.1-tests.jar"/>
 	<classpathentry kind="lib" path="C:/Users/lbnal/eclipse/workspace/commons-math3-3.6.1-bin/commons-math3-3.6.1/commons-math3-3.6.1-test-sources.jar"/>
 	<classpathentry kind="lib" path="C:/Users/lbnal/eclipse/workspace/commons-math3-3.6.1-bin/commons-math3-3.6.1/commons-math3-3.6.1-tools.jar"/>
-	<classpathentry kind="lib" path="jgoodies-forms-1.8.0.jar" sourcepath="jgoodies-forms-1.8.0-sources.jar"/>
 	<classpathentry kind="lib" path="C:/Users/lbnal/eclipse/workspace/ddogleg-v0.10-libs/core-0.30.jar"/>
 	<classpathentry kind="lib" path="C:/Users/lbnal/eclipse/workspace/ddogleg-v0.10-libs/ddogleg-0.10.jar"/>
 	<classpathentry kind="lib" path="C:/Users/lbnal/eclipse/workspace/ddogleg-v0.10-libs/ddogleg-0.10-sources.jar"/>
 	<classpathentry kind="lib" path="C:/Users/lbnal/eclipse/workspace/ddogleg-v0.10-libs/dense64-0.30.jar"/>
 	<classpathentry kind="lib" path="C:/Users/lbnal/eclipse/workspace/ddogleg-v0.10-libs/equation-0.30.jar"/>
 	<classpathentry kind="lib" path="C:/Users/lbnal/eclipse/workspace/ddogleg-v0.10-libs/simple-0.30.jar"/>
+	<classpathentry kind="lib" path="C:/Users/lbnal/eclipse/workspace/lib/jgoodies-forms-1.8.0.jar"/>
+	<classpathentry kind="lib" path="C:/Users/lbnal/eclipse/workspace/lib/miglayout15-swing.jar"/>
+	<classpathentry kind="lib" path="C:/Users/lbnal/eclipse/workspace/lib/jar-in-jar-loader.zip"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

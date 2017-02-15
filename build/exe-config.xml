@@ -2,7 +2,7 @@
 <launch4jConfig>
   <dontWrapJar>false</dontWrapJar>
   <headerType>gui</headerType>
-  <jar>C:\Users\lbnal\eclipse\workspace\AFM-Analytics\dist\AFM-Analytics-v1.0.jar</jar>
+  <jar>C:\Users\lbnal\eclipse\workspace\AFM-Analytics\dist\AFM-Analytics-v0.1.0.jar</jar>
   <outfile>C:\Users\lbnal\eclipse\workspace\AFM-Analytics\dist\AFM-Analytics.exe</outfile>
   <errTitle></errTitle>
   <cmdLine></cmdLine>
