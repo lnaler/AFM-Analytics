@@ -75,6 +75,9 @@ public class AfmDisplay{
 	private double gelThickness;
 	
 	private File dataFile;
+	private File dataDirectory;
+	private boolean directorySet = false;
+	
 	private CurveData data;
 	private static boolean zUpdatedFX;
 	private boolean limitZ = false;
@@ -555,7 +558,10 @@ public class AfmDisplay{
 				JFileChooser chooser = new JFileChooser();
 				//FileFilter filter = new FileNameExtensionFilter("TXT files", "txt"); //Not all files are .txt
 				//chooser.setFileFilter(filter);
-				//chooser.setCurrentDirectory("<YOUR DIR COMES HERE>"); //TODO
+				if(directorySet)
+				{
+					chooser.setCurrentDirectory(dataDirectory);
+				}
 				int returnVal = chooser.showOpenDialog(chooser);
 				//if it's a valid file, we'll load it in
 				if(returnVal == JFileChooser.APPROVE_OPTION) {
@@ -574,6 +580,8 @@ public class AfmDisplay{
 					AfmDisplay.infoBox("Error parsing file.", "ERROR");
 				   }
 				   log.append("File has been processed successfully." + "\n");
+				   dataDirectory = dataFile;
+				   directorySet = true;
 				   //Now that we have data, we can view or run it
 				   btnView.setEnabled(true);
 				   btnRun.setEnabled(true);
