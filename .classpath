@@ -23,5 +23,11 @@
 	<classpathentry kind="lib" path="C:/Users/lbnal/eclipse/workspace/commons-math3-3.6.1-bin/commons-math3-3.6.1/commons-math3-3.6.1-test-sources.jar"/>
 	<classpathentry kind="lib" path="C:/Users/lbnal/eclipse/workspace/commons-math3-3.6.1-bin/commons-math3-3.6.1/commons-math3-3.6.1-tools.jar"/>
 	<classpathentry kind="lib" path="jgoodies-forms-1.8.0.jar" sourcepath="jgoodies-forms-1.8.0-sources.jar"/>
+	<classpathentry kind="lib" path="C:/Users/lbnal/eclipse/workspace/ddogleg-v0.10-libs/core-0.30.jar"/>
+	<classpathentry kind="lib" path="C:/Users/lbnal/eclipse/workspace/ddogleg-v0.10-libs/ddogleg-0.10.jar"/>
+	<classpathentry kind="lib" path="C:/Users/lbnal/eclipse/workspace/ddogleg-v0.10-libs/ddogleg-0.10-sources.jar"/>
+	<classpathentry kind="lib" path="C:/Users/lbnal/eclipse/workspace/ddogleg-v0.10-libs/dense64-0.30.jar"/>
+	<classpathentry kind="lib" path="C:/Users/lbnal/eclipse/workspace/ddogleg-v0.10-libs/equation-0.30.jar"/>
+	<classpathentry kind="lib" path="C:/Users/lbnal/eclipse/workspace/ddogleg-v0.10-libs/simple-0.30.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
