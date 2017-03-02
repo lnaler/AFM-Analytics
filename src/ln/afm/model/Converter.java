@@ -75,4 +75,8 @@ public class Converter {
 		return results;
 	}
 	
+	public static boolean hasUnits(String units1, String units2)
+	{
+		return (zUnits.containsKey(units1.toLowerCase()) && vUnits.containsKey(units2.toLowerCase()));
+	}
 }

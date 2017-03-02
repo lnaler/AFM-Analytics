@@ -66,6 +66,8 @@ public class CurveData {
 	private double R2 = 0.0;
 	private double youngs;
 	
+	private boolean hasRun;
+	
 	private List<Double> zdistValues = new ArrayList<Double>();
 	private List<Double> voltValues = new ArrayList<Double>();
 	
@@ -91,6 +93,7 @@ public class CurveData {
 	public CurveData(){
 		points = new ArrayList<WeightedObservedPoint>();
 		dlPoints = new ArrayList<Point2D>();
+		hasRun = false;
 		
 		minX = 0;
 		minY = 0;
@@ -569,6 +572,7 @@ public class CurveData {
         NumberAxis range = (NumberAxis) xylineChart.getXYPlot().getRangeAxis();
         range.setRange(minY, maxY);
 		forceData = xylineChart;
+		hasRun = true;
 	}
 	
 	public JFreeChart getXYChart()
@@ -640,5 +644,10 @@ public class CurveData {
 	public List<Point2D> getDogLegPoints()
 	{
 		return dlPoints;
+	}
+	
+	public boolean hasRun()
+	{
+		return hasRun;
 	}
 }

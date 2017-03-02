@@ -29,21 +29,29 @@ import ln.afm.solver.RobustFit;
 
 public class Manager {
 	
-	CurveData currentData;
+	List<File> allFiles = new ArrayList<File>();
+	List<CurveData> allData = new ArrayList<CurveData>();
+	private int numParsed;
+	
+	private int currentData;
 	boolean goodFit = true;
 	
 	static String configFile = "afm-local.config";
 	static int numConfigs = 4; 
 
 	public Manager() {
+		numParsed = 0;
 	}
 
-	public void setCurrentData(CurveData cData)
+	private void setCurrentData(int dataIndex)
 	{
-		currentData = cData;
-		
+		currentData = dataIndex;
 	}
 
+	public void setCurrentFile(int index)
+	{
+		setCurrentData(index);
+	}
 	
 	/**
 	 * Initializes a matrix with given data
@@ -51,7 +59,7 @@ public class Manager {
 	 */
 	public void initMatrix()
 	{
-		currentData.initMatrix();
+		allData.get(currentData).initMatrix();
 	}
 	
 	/**
@@ -59,8 +67,8 @@ public class Manager {
 	 */
 	public void calcMatrix(boolean goodFit)
 	{
-		currentData.calcMatrix();
-		currentData.generateXYChart();
+		allData.get(currentData).calcMatrix();
+		allData.get(currentData).generateXYChart();
 	}
 	
 	/**
@@ -86,8 +94,8 @@ public class Manager {
 		System.out.print("Running..." + "\n");
 		initMatrix();
 		calcMatrix(goodFit); // perform calculations
-		currentData.getXYChart(); //get chart
-		return currentData.getXYChart();
+		//allData.get(currentData).getXYChart(); //get chart
+		return allData.get(currentData).getXYChart();
 	}
 	
 	/**
@@ -96,8 +104,29 @@ public class Manager {
 	 */
 	public double[] getResults()
 	{
-		return currentData.getResults();
+		return allData.get(currentData).getResults();
 	}
+	
+//	public boolean parseFile(File dataFile)
+//	{
+//		boolean dataUpload = false;
+//		CurveData data = new CurveData();
+//		FileParser fP = new FileParser(data);
+//		//see if we can parse out some data
+//		try {
+//			dataUpload = fP.readFile(dataFile);
+//			//data = fP.getData();
+//		} 
+//		catch (IOException e){
+//			e.printStackTrace();
+//			AfmDisplay.infoBox("Error parsing file.", "ERROR");
+//		}
+//		if(dataUpload)
+//		{
+//			//setCurrentData(data);
+//		}
+//		return dataUpload;
+//	}
 	
 	public boolean parseFile(File dataFile)
 	{
@@ -107,7 +136,8 @@ public class Manager {
 		//see if we can parse out some data
 		try {
 			dataUpload = fP.readFile(dataFile);
-			data = fP.getData();
+			System.out.println("Just parsed: " + dataFile.getName());
+			//data = fP.getData();
 		} 
 		catch (IOException e){
 			e.printStackTrace();
@@ -115,7 +145,7 @@ public class Manager {
 		}
 		if(dataUpload)
 		{
-			setCurrentData(data);
+			allData.add(data);
 		}
 		return dataUpload;
 	}
@@ -123,29 +153,29 @@ public class Manager {
 	public JFreeChart viewRawGraph()
 	{
 		String[] testUnits = {"nm","V"};
-		currentData.changeUnits(testUnits);
+		allData.get(currentData).changeUnits(testUnits);
 		//data.printData();
-		return currentData.getRawData();
+		return allData.get(currentData).getRawData();
 	}
 	
 	public void setParameters (double[] inputs, boolean limitZ) { //TODO ERROR HANDLING
 		double[] configs = getConfigValues();
 		
-		currentData.setPoissonsRatio(configs[0]);
-		currentData.setAlpha(configs[1]);
-		currentData.setSpringConstant(configs[2]);
-		currentData.setSensitivity(configs[3]);
+		allData.get(currentData).setPoissonsRatio(configs[0]);
+		allData.get(currentData).setAlpha(configs[1]);
+		allData.get(currentData).setSpringConstant(configs[2]);
+		allData.get(currentData).setSensitivity(configs[3]);
 		
 		
-		//currentData.setSensitivity(inputs[0]);
-		//currentData.setSpringConstant(inputs[1]);
-		//currentData.setAlpha(inputs[2]);
-		currentData.setImpactZ(inputs[3]);
-		currentData.setLimitPercent(inputs[4]);
-		currentData.setGelSize(inputs[5]);
-		//currentData.setPoissonsRatio(0.25);
+		//allData.get(currentData).setSensitivity(inputs[0]);
+		//allData.get(currentData).setSpringConstant(inputs[1]);
+		//allData.get(currentData).setAlpha(inputs[2]);
+		allData.get(currentData).setImpactZ(inputs[3]);
+		allData.get(currentData).setLimitPercent(inputs[4]);
+		allData.get(currentData).setGelSize(inputs[5]);
+		//allData.get(currentData).setPoissonsRatio(0.25);
 		
-		currentData.makeLimited(limitZ);
+		allData.get(currentData).makeLimited(limitZ);
 	}
 	
 	public void setConfigValues(String[] values)
@@ -185,4 +215,70 @@ public class Manager {
 		}
 		return results;
 	}
+	
+	public File[] parseFiles(File[] dataFiles)
+	{
+		
+		setAllFiles(dataFiles);
+		boolean[] success = new boolean[allFiles.size()];
+		Arrays.fill(success, false);
+		int numRemoved = 0;
+		for(int i = 0; i < dataFiles.length; i++)
+		{
+			success[i]=parseFile(dataFiles[i]);
+			if(!success[i])
+			{
+				allFiles.remove(i - numRemoved);
+				numRemoved++;
+				System.out.println("Just removed: " + dataFiles[i].getName());
+			}
+		}
+		numParsed = allFiles.size();
+		File[] output =  allFiles.toArray(new File[numParsed]);
+		System.out.println("Spacer line");
+		return output;
+	}
+	
+	private void setAllFiles(File[] inFiles)
+	{
+		for(int i=0;i < inFiles.length;i++)
+		{
+			if(!allFiles.contains(inFiles[i]))
+			{
+				allFiles.add(inFiles[i]);
+			}
+		}
+	}
+	
+	public void clearAllFiles()
+	{
+		allFiles = new ArrayList<File>();
+		allData = new ArrayList<CurveData>();
+		numParsed = 0;
+	}
+	
+	public boolean hasRun()
+	{
+		return allData.get(currentData).hasRun();
+	}
+	
+	public JFreeChart getPreviousRun()
+	{
+		return allData.get(currentData).getXYChart();
+	}
+	
+	public double[] getPreviousParameters()
+	{
+		double tempGelSize = allData.get(currentData).getGelSize();
+		double tempImpactZ = allData.get(currentData).getImpactZ();
+		double tempLimitPercent = allData.get(currentData).getLimitPercent();
+		double tempHasLimit = 0.0;
+		if(allData.get(currentData).isLimited())
+		{
+			tempHasLimit = 1.0;
+		}
+		double[] results = {tempGelSize, tempImpactZ, tempLimitPercent, tempHasLimit};
+		return results;
+	}
+	
 }

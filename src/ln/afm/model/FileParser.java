@@ -59,7 +59,7 @@ public class FileParser {
 	    	  {
 	    		  units = checkUnits(line);
 	    		  unitsChecked = true;
-	    		  if(units == null)
+	    		  if(units[0].equals(""))
 	    		  {
 	    			  //userLog.append("ERROR: The file must have the units in the header row." + "\n");
 	    			  return false;
@@ -89,9 +89,23 @@ public class FileParser {
 		//userLog.append("Checking for units..." + "\n");
 		String[] input = firstLine.split("\t");
 		input = removeSpaces(input);
+		//System.out.println("First line is: " + input[0]);
+		if(input.length != 2)
+		{
+			input = new String[2];
+			input[0] = "";
+			input[1] = "";
+			return input;
+		}
 		if(isDouble(input[0]) || isDouble(input[1]))
 		{
-			return null;
+			input[0] = "";
+			input[1] = "";
+		}
+		if(!Converter.hasUnits(input[0], input[1]))
+		{
+			input[0] = "";
+			input[1] = "";
 		}
 		return input;
 	}
@@ -103,9 +117,17 @@ public class FileParser {
 	 */
 	private boolean processLine(String line) //TODO Error handling: Should be a number, error if not
 	{
+		if(line.contains("\\*"))
+		{
+			return false;
+		}
 		String dataStr[] = line.split("\t");
 		dataStr = removeSpaces(dataStr);
 		
+		if(dataStr.length != 2)
+		{
+			return false;
+		}
 		if(isDouble(dataStr[0]) && isDouble(dataStr[1]))
 		{
 			double data[] = new double[2];
