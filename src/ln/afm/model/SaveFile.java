@@ -17,6 +17,12 @@ public class SaveFile {
 		this.filePath = filePath;
 	}
 	
+	public SaveFile(String filePath, boolean append)
+	{
+		this.filePath = filePath;
+		this.append = append;
+	}
+	
 	//http://stackoverflow.com/questions/2885173/how-do-i-create-a-file-and-write-to-it-in-java
 	public void write(List<String> lines) {
 		try
@@ -24,11 +30,11 @@ public class SaveFile {
 			Path file = Paths.get(filePath);
 			if(append)
 			{
-				Files.write(file, lines, Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+				Files.write(file, lines, Charset.forName("UTF-8"), StandardOpenOption.APPEND, StandardOpenOption.CREATE);
 			}
 			else
 			{
-				Files.write(file, lines, Charset.forName("UTF-8"));
+				Files.write(file, lines, Charset.forName("UTF-8"), StandardOpenOption.CREATE);
 			}
 		}
 		catch (IOException e)

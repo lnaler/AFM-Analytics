@@ -650,4 +650,25 @@ public class CurveData {
 	{
 		return hasRun;
 	}
+	public List<String> print(String fileName)
+	{
+		List<String> output = new ArrayList<String>();
+		output.add("File: " + fileName);
+		
+		if(hasRun)
+		{
+			output.add(String.format("Impact Z: %.2f nm, Gel Size: %.1f nm, Limited: %b, %.2f pct",
+					impactZ, gelSize, hasLimit, limitPercent));
+			output.add(String.format("Sensitivity: %.2f nm/V, Spring Constant: %.3f N/m", sensFactor, sprConstant));
+			output.add(String.format("Poisson: %.3f, Alpha: %.2f deg", poissonsRatio, alpha));
+			output.add(String.format("Slope: %.1f, Exponent: %.3f, R2: %.3f", slope, exponent, R2));
+			output.add(String.format("Young's Modulus: %.3f kPa", youngs));
+		}
+		else
+		{
+			output.add("Data has not been analyzed.");
+		}
+		output.add("===========================================");
+		return output;
+	}
 }

@@ -11,6 +11,7 @@ import javax.swing.JTextArea;
 import org.apache.commons.math3.fitting.WeightedObservedPoint;
 import org.ejml.data.DenseMatrix64F;
 import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.plot.PlotOrientation;
@@ -38,6 +39,9 @@ public class Manager {
 	
 	static String configFile = "afm-local.config";
 	static int numConfigs = 4; 
+	
+	public static final int JPEG = 0;
+	public static final int PNG = 1;
 
 	public Manager() {
 		numParsed = 0;
@@ -279,6 +283,62 @@ public class Manager {
 		}
 		double[] results = {tempGelSize, tempImpactZ, tempLimitPercent, tempHasLimit};
 		return results;
+	}
+	
+	public void export(int[] exportFiles, String savePath, int fileType)
+	{
+		System.out.println("Readying " + savePath);
+		for(int i = 0; i < exportFiles.length; i++)
+		{
+			System.out.println("Saving: " + allFiles.get(exportFiles[i]).getName());
+		}
+		
+		String filePath = savePath + "\\Analysis.txt";
+		for(int i = 0; i < exportFiles.length; i++)
+		{
+			CurveData saveData = allData.get(exportFiles[i]);
+			String saveFile = allFiles.get(exportFiles[i]).getName();
+			
+			String extension = ".png";
+			
+			if(fileType == JPEG)
+			{
+				extension = ".jpg";
+			}
+			File rawName = new File(savePath, "Raw - " + saveFile + extension);
+			File forceName = new File(savePath, "Raw - " + saveFile + extension);
+			
+			SaveFile saver = new SaveFile(filePath, true);
+			saver.write(saveData.print(saveFile));
+			
+			if(fileType == JPEG)
+			{
+				try {
+			        ChartUtilities.saveChartAsJPEG(rawName, saveData.getRawData(), 800, 800);
+			        if(saveData.hasRun())
+			        {
+			        	ChartUtilities.saveChartAsJPEG(forceName, saveData.getXYChart(), 800, 800);
+			        }
+			    } 
+				catch (IOException ex) {
+			        System.out.println("Error saving a file");
+			    }
+			}
+			else
+			{
+				try {
+			        ChartUtilities.saveChartAsPNG(rawName, saveData.getRawData(), 800, 800);
+			        if(saveData.hasRun())
+			        {
+			        	ChartUtilities.saveChartAsPNG(forceName, saveData.getXYChart(), 800, 800);
+			        }
+			    } 
+				catch (IOException ex) {
+			        System.out.println("Error saving a file");
+			    }
+			}
+			
+		}
 	}
 	
 }

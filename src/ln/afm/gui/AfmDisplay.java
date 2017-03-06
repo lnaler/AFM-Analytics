@@ -13,13 +13,17 @@ import java.awt.event.MouseEvent;
 import java.awt.geom.Rectangle2D;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.text.NumberFormat;
 
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
@@ -65,6 +69,9 @@ import javax.swing.ButtonGroup;
 import javax.swing.DefaultListModel;
 
 import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+
 import javax.swing.JMenuBar;
 import javax.swing.JSeparator;
 import javax.swing.JMenu;
@@ -528,75 +535,75 @@ public class AfmDisplay{
 		lblnm2.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 16));
 		frmAfmanalytics.getContentPane().add(lblnm2, "cell 2 14,alignx left");
 				
-				//Results field for R-Squared value
-				txtRsquared = new JTextField();
-				txtRsquared.setBackground(UIManager.getColor("Button.background"));
-				txtRsquared.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 18));
-				txtRsquared.setEditable(false);
-				txtRsquared.setText("R-Squared:");
-				txtRsquared.setBorder(BorderFactory.createEmptyBorder());
-				frmAfmanalytics.getContentPane().add(txtRsquared, "cell 4 14 4 1,growx");
-				txtRsquared.setColumns(10);
-				
-				//Do we want to automatically run without Z0 input? No. Not yet.
-				chckbxSelectZ = new JCheckBox("   Select Z0");
-				chckbxSelectZ.setEnabled(false);
-				chckbxSelectZ.setSelected(true);
-				chckbxSelectZ.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 18));
-				frmAfmanalytics.getContentPane().add(chckbxSelectZ, "cell 0 15,alignx right");
-				
-				//Formatted field associated with ImpactZ
-				impactZField.setValue(new Double(0));
-				impactZField.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 18));
-				frmAfmanalytics.getContentPane().add(impactZField, "cell 1 15,growx");
-				impactZField.setColumns(10);
-				//If this field changes, we want to know
-				impactZField.getDocument().addDocumentListener(new DocumentListener() { //http://stackoverflow.com/questions/3953208/value-change-listener-to-jtextfield
-					public void changedUpdate(DocumentEvent e) {
-						updateVal();
-					}
-					public void removeUpdate(DocumentEvent e) {
-						updateVal();
-					}
-					public void insertUpdate(DocumentEvent e) {
-						updateVal();
-					}
-					
-					public void updateVal(){
-						boolean isNum = FileParser.isDouble(impactZField.getText());
-						if(isNum)
-						{
-							//If it was update by the textbox
-							if(!zUpdatedFX)
-							{
-								double tempVal = ((Number)impactZField.getValue()).doubleValue();
-								updateClickedZ(tempVal);
-								impactZ = tempVal;
-							}
-							//If it was updated by the crosshairs
-							if(zUpdatedFX)
-							{
-								impactZ = clickedZ;
-								zChanged(false);
-							}
-						}
-					}
-				
-				});
+		//Results field for R-Squared value
+		txtRsquared = new JTextField();
+		txtRsquared.setBackground(UIManager.getColor("Button.background"));
+		txtRsquared.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 18));
+		txtRsquared.setEditable(false);
+		txtRsquared.setText("R-Squared:");
+		txtRsquared.setBorder(BorderFactory.createEmptyBorder());
+		frmAfmanalytics.getContentPane().add(txtRsquared, "cell 4 14 4 1,growx");
+		txtRsquared.setColumns(10);
 		
-				JLabel lblnm_1 = new JLabel("(nm)");
-				lblnm_1.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 16));
-				frmAfmanalytics.getContentPane().add(lblnm_1, "cell 2 15,alignx left");
-				
-				//Result field for Young's Modulus
-				txtYoungsModulus = new JTextField();
-				txtYoungsModulus.setBackground(UIManager.getColor("Button.background"));
-				txtYoungsModulus.setEditable(false);
-				txtYoungsModulus.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 18));
-				txtYoungsModulus.setText("Young's Modulus: ");
-				txtYoungsModulus.setBorder(BorderFactory.createEmptyBorder());
-				frmAfmanalytics.getContentPane().add(txtYoungsModulus, "cell 4 15 4 1,grow");
-				txtYoungsModulus.setColumns(10);
+		//Do we want to automatically run without Z0 input? No. Not yet.
+		chckbxSelectZ = new JCheckBox("   Select Z0");
+		chckbxSelectZ.setEnabled(false);
+		chckbxSelectZ.setSelected(true);
+		chckbxSelectZ.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 18));
+		frmAfmanalytics.getContentPane().add(chckbxSelectZ, "cell 0 15,alignx right");
+		
+		//Formatted field associated with ImpactZ
+		impactZField.setValue(new Double(0));
+		impactZField.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 18));
+		frmAfmanalytics.getContentPane().add(impactZField, "cell 1 15,growx");
+		impactZField.setColumns(10);
+		//If this field changes, we want to know
+		impactZField.getDocument().addDocumentListener(new DocumentListener() { //http://stackoverflow.com/questions/3953208/value-change-listener-to-jtextfield
+			public void changedUpdate(DocumentEvent e) {
+				updateVal();
+			}
+			public void removeUpdate(DocumentEvent e) {
+				updateVal();
+			}
+			public void insertUpdate(DocumentEvent e) {
+				updateVal();
+			}
+			
+			public void updateVal(){
+				boolean isNum = FileParser.isDouble(impactZField.getText());
+				if(isNum)
+				{
+					//If it was update by the textbox
+					if(!zUpdatedFX)
+					{
+						double tempVal = ((Number)impactZField.getValue()).doubleValue();
+						updateClickedZ(tempVal);
+						impactZ = tempVal;
+					}
+					//If it was updated by the crosshairs
+					if(zUpdatedFX)
+					{
+						impactZ = clickedZ;
+						zChanged(false);
+					}
+				}
+			}
+		
+		});
+
+		JLabel lblnm_1 = new JLabel("(nm)");
+		lblnm_1.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 16));
+		frmAfmanalytics.getContentPane().add(lblnm_1, "cell 2 15,alignx left");
+		
+		//Result field for Young's Modulus
+		txtYoungsModulus = new JTextField();
+		txtYoungsModulus.setBackground(UIManager.getColor("Button.background"));
+		txtYoungsModulus.setEditable(false);
+		txtYoungsModulus.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 18));
+		txtYoungsModulus.setText("Young's Modulus: ");
+		txtYoungsModulus.setBorder(BorderFactory.createEmptyBorder());
+		frmAfmanalytics.getContentPane().add(txtYoungsModulus, "cell 4 15 4 1,grow");
+		txtYoungsModulus.setColumns(10);
 		
 		JMenuBar menuBar = new JMenuBar();
 		menuBar.setBorderPainted(false);
@@ -610,7 +617,109 @@ public class AfmDisplay{
 		mnFile.setFont(new Font("Segoe UI", Font.PLAIN, 18));
 		menuBar.add(mnFile);
 		
-		JMenuItem mntmExport = new JMenuItem("Export");
+		JMenuItem mntmExport = new JMenuItem("Export File(s)");
+		mntmExport.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent ev) {
+				JPanel exportPanel = new JPanel();
+				exportPanel.setLayout(new BoxLayout(exportPanel, BoxLayout.Y_AXIS));
+				
+				JList<String> exportList = new JList<String>(listModel);
+				exportList.setModel(listModel);
+				exportList.setVisibleRowCount(10);
+				exportList.setFont(new Font("Tahoma", Font.PLAIN, 16));
+				
+				JScrollPane exportScroll = new JScrollPane(exportList);
+				exportScroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+				exportScroll.setViewportBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
+
+				JLabel info = new JLabel("Please select the files to export and where to export them.");
+				info.setHorizontalAlignment(SwingConstants.CENTER);
+				exportPanel.add(info);
+				exportPanel.add(Box.createVerticalStrut(15));
+				exportPanel.add(exportScroll);
+				exportPanel.add(Box.createVerticalStrut(15));
+				
+				JPanel locPanel = new JPanel();
+				locPanel.setLayout(new BoxLayout(locPanel, BoxLayout.LINE_AXIS));
+				locPanel.setAlignmentX(JComponent.CENTER_ALIGNMENT);
+				JTextField dirLocation = new JTextField(15);
+				dirLocation.setEnabled(true);
+				dirLocation.setEditable(false);
+				dirLocation.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
+				locPanel.add(dirLocation);
+				locPanel.add(Box.createHorizontalStrut(2));
+				JButton btnExpBrowse = new JButton("Browse");
+				btnBrowse.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 18));
+				locPanel.add(btnExpBrowse);
+				
+				JPanel radBtnPanel = new JPanel();
+				radBtnPanel.setLayout(new GridBagLayout());
+				ButtonGroup radFileExt = new ButtonGroup();
+				
+				GridBagConstraints gbc = new GridBagConstraints();
+				gbc.gridx = GridBagConstraints.RELATIVE;
+				gbc.gridy = 0;
+				gbc.ipadx = 10;
+				gbc.anchor = GridBagConstraints.WEST;
+				
+				JRadioButton rdbtnJPEG = new JRadioButton(".jpg");
+				rdbtnJPEG.setFont(new Font("Tahoma", Font.PLAIN, 18));
+				radFileExt.add(rdbtnJPEG);
+				radBtnPanel.add(rdbtnJPEG, gbc);
+				
+				radBtnPanel.add(Box.createHorizontalStrut(20));
+				
+				JRadioButton rdbtnPNG = new JRadioButton(".png");
+				rdbtnPNG.setFont(new Font("Tahoma", Font.PLAIN, 18));
+				rdbtnPNG.setSelected(true);
+				radFileExt.add(rdbtnPNG);
+				radBtnPanel.add(rdbtnPNG, gbc);
+				
+				
+				exportPanel.add(locPanel);
+				exportPanel.add(radBtnPanel);
+				btnExpBrowse.addMouseListener(new MouseAdapter() {
+					@Override
+					public void mouseClicked(MouseEvent arg0) {
+						JFileChooser chooser = new JFileChooser();
+						chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+						if(directorySet)
+						{
+							chooser.setCurrentDirectory(dataDirectory);
+						}
+						int returnVal = chooser.showOpenDialog(chooser);
+						//if it's a valid file, we'll load it in
+						if(returnVal == JFileChooser.APPROVE_OPTION) {
+							dirLocation.setText(chooser.getSelectedFile().toString());
+						}
+					}
+				});
+				
+				
+				int result = JOptionPane.showConfirmDialog(null, exportPanel, 
+						"Export File(s)", JOptionPane.OK_CANCEL_OPTION);
+				if (result == JOptionPane.OK_OPTION) {
+					int[] exportFiles = exportList.getSelectedIndices();
+					if(exportFiles.length > 0)
+					{
+						System.out.println("Length is: " + exportFiles.length);
+						for(int i = 0;i < exportFiles.length; i++)
+						{
+							System.out.println("Selected: " + exportFiles[i]);
+						}
+						if(Files.isDirectory(Paths.get(dirLocation.getText())))
+						{
+							int value = Manager.PNG;
+							if(rdbtnJPEG.isSelected())
+							{
+								value = Manager.JPEG;
+							}
+							manager.export(exportFiles, dirLocation.getText(), value);
+						}
+					}
+				}
+			}
+		});
 		mntmExport.setHorizontalAlignment(SwingConstants.LEFT);
 		mntmExport.setFont(new Font("Segoe UI", Font.PLAIN, 20));
 		mnFile.add(mntmExport);
@@ -634,20 +743,44 @@ public class AfmDisplay{
 				springField.setText(String.valueOf(tempValues[2]));
 				sensitivityField.setText(String.valueOf(tempValues[3]));
 				
-				JPanel myPanel = new JPanel();
-				myPanel.add(new JLabel("Poisson Ratio:"));
-				myPanel.add(poissonField);
-				myPanel.add(Box.createHorizontalStrut(15)); // a spacer
-				myPanel.add(new JLabel("Alpha:"));
-				myPanel.add(alphaField);
-				myPanel.add(Box.createHorizontalStrut(15)); // a spacer
-				myPanel.add(new JLabel("Spring Constant:"));
-				myPanel.add(springField);
-				myPanel.add(Box.createHorizontalStrut(15)); // a spacer
-				myPanel.add(new JLabel("Sensitivity Factor:"));
-				myPanel.add(sensitivityField);
-				int result = JOptionPane.showConfirmDialog(null, myPanel, 
-						"Click OK to update values", JOptionPane.OK_CANCEL_OPTION);
+				JPanel paramsPanel = new JPanel();
+				paramsPanel.setLayout(new BoxLayout(paramsPanel, BoxLayout.Y_AXIS));
+					
+				JPanel paramsPanel1 = new JPanel();
+				paramsPanel1.setLayout(new BoxLayout(paramsPanel1, BoxLayout.LINE_AXIS));
+				paramsPanel1.add(Box.createHorizontalStrut(15));
+				paramsPanel1.add(new JLabel("Poisson Ratio:"));
+				paramsPanel1.add(Box.createHorizontalStrut(34));
+				paramsPanel1.add(poissonField);
+				
+				JPanel paramsPanel2 = new JPanel();
+				paramsPanel2.setLayout(new BoxLayout(paramsPanel2, BoxLayout.LINE_AXIS));
+				paramsPanel2.add(Box.createHorizontalStrut(15)); // a spacer
+				paramsPanel2.add(new JLabel("Alpha:"));
+				paramsPanel2.add(Box.createHorizontalStrut(80));
+				paramsPanel2.add(alphaField);
+				
+				JPanel paramsPanel3 = new JPanel();
+				paramsPanel3.setLayout(new BoxLayout(paramsPanel3, BoxLayout.LINE_AXIS));
+				paramsPanel3.add(Box.createHorizontalStrut(15)); // a spacer
+				paramsPanel3.add(new JLabel("Spring Constant:"));
+				paramsPanel3.add(Box.createHorizontalStrut(21));
+				paramsPanel3.add(springField);
+				
+				JPanel paramsPanel4 = new JPanel();
+				paramsPanel4.setLayout(new BoxLayout(paramsPanel4, BoxLayout.LINE_AXIS));
+				paramsPanel4.add(Box.createHorizontalStrut(15)); // a spacer
+				paramsPanel4.add(new JLabel("Sensitivity Factor:"));
+				paramsPanel4.add(Box.createHorizontalStrut(15));
+				paramsPanel4.add(sensitivityField);
+				
+				paramsPanel.add(paramsPanel1);
+				paramsPanel.add(paramsPanel2);
+				paramsPanel.add(paramsPanel3);
+				paramsPanel.add(paramsPanel4);
+				
+				int result = JOptionPane.showConfirmDialog(null, paramsPanel, 
+						"Parameters", JOptionPane.OK_CANCEL_OPTION);
 				if (result == JOptionPane.OK_OPTION) {
 						System.out.println("Poisson: " + poissonField.getText());
 						System.out.println("Alpha: " + alphaField.getText());
