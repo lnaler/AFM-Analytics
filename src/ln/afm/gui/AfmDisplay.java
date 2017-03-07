@@ -12,12 +12,10 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Rectangle2D;
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.NumberFormat;
 
-import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -36,7 +34,6 @@ import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.BevelBorder;
-import javax.swing.border.SoftBevelBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
@@ -60,8 +57,6 @@ import javafx.scene.Scene;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Paint;
 import ln.afm.manager.Manager;
-import ln.afm.manager.RunAnalysis;
-import ln.afm.model.CurveData;
 import ln.afm.model.FileParser;
 import net.miginfocom.swing.MigLayout;
 import javax.swing.JRadioButton;
@@ -88,12 +83,7 @@ import javax.swing.ScrollPaneConstants;
  *
  */
 public class AfmDisplay{
-	//private static final Logger LOGGER = Logger.getLogger(AfmDisplay.class.getName() ); //TODO logging
-	private static int FXWIDTH = 445;
-	private static int FXHEIGHT = 340;
-	
 	private JFrame frmAfmanalytics;	
-	private JFormattedTextField sensFactorField;
 	private static JFormattedTextField impactZField = new JFormattedTextField(NumberFormat.getNumberInstance());
 	private JFormattedTextField gelThicknessField;
 	private static double clickedZ = 0;
@@ -192,7 +182,7 @@ public class AfmDisplay{
 		//frmAfmanalytics.getContentPane().add(chartPanel, "cell 7 0 5 10,grow");
 		
 		JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, fxPanel, chartPanel);
-		frmAfmanalytics.getContentPane().add(splitPane, "cell 0 0 12 10,grow");
+		frmAfmanalytics.getContentPane().add(splitPane, "cell 0 0 12 11,grow");
 		splitPane.setOneTouchExpandable(true);
 		splitPane.setDividerLocation(400);
 		
@@ -200,7 +190,7 @@ public class AfmDisplay{
 		JButton btnClearData = new JButton("Clear Data");
 		btnClearData.setEnabled(false);
 		btnClearData.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 18));
-		frmAfmanalytics.getContentPane().add(btnClearData, "cell 0 10,growx");
+		frmAfmanalytics.getContentPane().add(btnClearData, "cell 0 11,growx");
 		btnClearData.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent arg0) {
@@ -218,7 +208,7 @@ public class AfmDisplay{
 		JButton btnView = new JButton("View");
 		btnView.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 18));
 		btnView.setEnabled(false);
-		frmAfmanalytics.getContentPane().add(btnView, "cell 1 10,growx");
+		frmAfmanalytics.getContentPane().add(btnView, "cell 1 11,growx");
 		btnView.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent arg0) {
@@ -245,49 +235,21 @@ public class AfmDisplay{
 		JButton btnRun = new JButton("Run");
 		btnRun.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 18));
 		btnRun.setEnabled(false);
-		frmAfmanalytics.getContentPane().add(btnRun, "cell 2 10 3 1,growx");
+		frmAfmanalytics.getContentPane().add(btnRun, "cell 2 11 3 1,growx");
 		btnRun.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent arg0) {
-				boolean isReady = inputsChecked();
-				if(isReady)
-				{
-					double[] inputs = getInputs();
-					manager.setParameters(inputs, limitZ);
-					chartPanel.setChart(manager.run(goodFit));
-					updateResults(manager.getResults());
-				}
-				if(!isReady)
-				{
-					infoBox("All variables must be numeric", "ERROR");
-				}
-			}
-		});
-		
-		//Clears the Force-Distance Chart //TODO Fix this
-		JButton btnClearChart = new JButton("Clear Chart");
-		btnClearChart.setEnabled(false);
-		btnClearChart.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 18));
-		frmAfmanalytics.getContentPane().add(btnClearChart, "cell 6 10 2 1");
-		btnClearChart.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseClicked(MouseEvent arg0) {
-				chartPanel.removeAll();
-			}
-		});
-		
-		//Clears the log
-		JButton btnClearFiles = new JButton("Clear Files");
-		btnClearFiles.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 18));
-		frmAfmanalytics.getContentPane().add(btnClearFiles, "cell 8 10 2 1,alignx right");
-		btnClearFiles.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseClicked(MouseEvent arg0) {				
-				int result = JOptionPane.showConfirmDialog(null, "Are you sure you want to clear all files?", "Notice", JOptionPane.YES_NO_OPTION);
-				if (result == JOptionPane.OK_OPTION) {
-					listModel.clear();
-					manager.clearAllFiles();
-				}
+				//boolean isReady = inputsChecked();
+//				if(isReady)
+//				{
+				double[] inputs = getInputs();
+				manager.setParameters(inputs, limitZ);
+				chartPanel.setChart(manager.run(goodFit));
+				updateResults(manager.getResults());
+//				if(!isReady)
+//				{
+//					infoBox("All variables must be numeric", "ERROR");
+//				}
 			}
 		});
 		
@@ -320,15 +282,38 @@ public class AfmDisplay{
 			
 		});
 		
-		JScrollPane scrollPane = new JScrollPane(fileList);
-		scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-		scrollPane.setViewportBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
-		frmAfmanalytics.getContentPane().add(scrollPane, "cell 8 11 4 5,grow");
+		
+		//Clears the Force-Distance Chart //TODO Fix this
+		JButton btnClearChart = new JButton("Clear Chart");
+		btnClearChart.setEnabled(false);
+		btnClearChart.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 18));
+		frmAfmanalytics.getContentPane().add(btnClearChart, "cell 6 11 2 1,growx");
+		btnClearChart.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent arg0) {
+				chartPanel.removeAll();
+			}
+		});
+		
+		//Clears the log
+		JButton btnClearFiles = new JButton("Clear Files");
+		btnClearFiles.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 18));
+		frmAfmanalytics.getContentPane().add(btnClearFiles, "cell 8 11 2 1,growx");
+		btnClearFiles.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent arg0) {				
+				int result = JOptionPane.showConfirmDialog(null, "Are you sure you want to clear all files?", "Notice", JOptionPane.YES_NO_OPTION);
+				if (result == JOptionPane.OK_OPTION) {
+					listModel.clear();
+					manager.clearAllFiles();
+				}
+			}
+		});
 		
 		//Browses to and reads in a selected file
 		JButton btnBrowse = new JButton("  Browse  ");
 		btnBrowse.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 18));
-		frmAfmanalytics.getContentPane().add(btnBrowse, "cell 10 10 2 1,alignx right");
+		frmAfmanalytics.getContentPane().add(btnBrowse, "cell 10 11 2 1,growx");
 		btnBrowse.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent arg0) {
@@ -361,43 +346,13 @@ public class AfmDisplay{
 			}
 		});
 		
+		JScrollPane scrollPane = new JScrollPane(fileList);
+		scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+		scrollPane.setViewportBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
+		frmAfmanalytics.getContentPane().add(scrollPane, "cell 8 12 4 4,grow");
+		
 		ButtonGroup fitRadButtons = new ButtonGroup();
 		zLimit = 20d;
-		
-		JLabel lblSensitivityFactor = new JLabel("Sensitivity Factor");
-		lblSensitivityFactor.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 18));
-		frmAfmanalytics.getContentPane().add(lblSensitivityFactor, "cell 0 12,alignx right");
-		
-		//Formatted field associated with sensFactor
-		sensFactorField = new JFormattedTextField(NumberFormat.getNumberInstance());
-		sensFactorField.setValue(new Double(0));
-		sensFactorField.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 18));
-		frmAfmanalytics.getContentPane().add(sensFactorField, "cell 1 12,growx");
-		sensFactorField.setColumns(5);
-		//Update sensFactor if field is changed
-		sensFactorField.getDocument().addDocumentListener(new DocumentListener() { //http://stackoverflow.com/questions/3953208/value-change-listener-to-jtextfield
-			public void changedUpdate(DocumentEvent e) {
-				updateVal();
-			}
-			public void removeUpdate(DocumentEvent e) {
-				updateVal();
-			}
-			public void insertUpdate(DocumentEvent e) {
-				updateVal();
-			}
-			
-			public void updateVal(){
-				boolean isNum = FileParser.isDouble(sensFactorField.getText());
-				if(isNum)
-				{
-					sensFactor = ((Number)sensFactorField.getValue()).doubleValue();
-				}
-			}
-		});
-		
-		JLabel lblnmv = new JLabel("(nm/V)");
-		lblnmv.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 16));
-		frmAfmanalytics.getContentPane().add(lblnmv, "cell 2 12,alignx left");
 		
 		JSeparator separator = new JSeparator();
 		separator.setOrientation(SwingConstants.VERTICAL);
@@ -737,11 +692,17 @@ public class AfmDisplay{
 				JTextField alphaField = new JTextField(5);
 				JTextField springField = new JTextField(5);
 				JTextField sensitivityField = new JTextField(5);
+				JTextField iterationsField = new JTextField(5);
 				
 				poissonField.setText(String.valueOf(tempValues[0]));
 				alphaField.setText(String.valueOf(tempValues[1]));
 				springField.setText(String.valueOf(tempValues[2]));
 				sensitivityField.setText(String.valueOf(tempValues[3]));
+				iterationsField.setText(String.valueOf(tempValues[4]));
+				
+				JLabel alphaLbl = new JLabel("deg");
+				JLabel springLbl = new JLabel("N/m");
+				JLabel sensLbl = new JLabel("nm/V");
 				
 				JPanel paramsPanel = new JPanel();
 				paramsPanel.setLayout(new BoxLayout(paramsPanel, BoxLayout.Y_AXIS));
@@ -752,6 +713,7 @@ public class AfmDisplay{
 				paramsPanel1.add(new JLabel("Poisson Ratio:"));
 				paramsPanel1.add(Box.createHorizontalStrut(34));
 				paramsPanel1.add(poissonField);
+				paramsPanel1.add(Box.createHorizontalStrut(36));
 				
 				JPanel paramsPanel2 = new JPanel();
 				paramsPanel2.setLayout(new BoxLayout(paramsPanel2, BoxLayout.LINE_AXIS));
@@ -759,6 +721,8 @@ public class AfmDisplay{
 				paramsPanel2.add(new JLabel("Alpha:"));
 				paramsPanel2.add(Box.createHorizontalStrut(80));
 				paramsPanel2.add(alphaField);
+				paramsPanel2.add(Box.createHorizontalStrut(15));
+				paramsPanel2.add(alphaLbl);
 				
 				JPanel paramsPanel3 = new JPanel();
 				paramsPanel3.setLayout(new BoxLayout(paramsPanel3, BoxLayout.LINE_AXIS));
@@ -766,6 +730,8 @@ public class AfmDisplay{
 				paramsPanel3.add(new JLabel("Spring Constant:"));
 				paramsPanel3.add(Box.createHorizontalStrut(21));
 				paramsPanel3.add(springField);
+				paramsPanel3.add(Box.createHorizontalStrut(14));
+				paramsPanel3.add(springLbl);
 				
 				JPanel paramsPanel4 = new JPanel();
 				paramsPanel4.setLayout(new BoxLayout(paramsPanel4, BoxLayout.LINE_AXIS));
@@ -773,11 +739,22 @@ public class AfmDisplay{
 				paramsPanel4.add(new JLabel("Sensitivity Factor:"));
 				paramsPanel4.add(Box.createHorizontalStrut(15));
 				paramsPanel4.add(sensitivityField);
+				paramsPanel4.add(Box.createHorizontalStrut(7));
+				paramsPanel4.add(sensLbl);
+				
+				JPanel paramsPanel5 = new JPanel();
+				paramsPanel5.setLayout(new BoxLayout(paramsPanel5, BoxLayout.LINE_AXIS));
+				paramsPanel5.add(Box.createHorizontalStrut(15)); // a spacer
+				paramsPanel5.add(new JLabel("Iterations:"));
+				paramsPanel5.add(Box.createHorizontalStrut(58));
+				paramsPanel5.add(iterationsField);
+				paramsPanel5.add(Box.createHorizontalStrut(36));
 				
 				paramsPanel.add(paramsPanel1);
 				paramsPanel.add(paramsPanel2);
 				paramsPanel.add(paramsPanel3);
 				paramsPanel.add(paramsPanel4);
+				paramsPanel.add(paramsPanel5);
 				
 				int result = JOptionPane.showConfirmDialog(null, paramsPanel, 
 						"Parameters", JOptionPane.OK_CANCEL_OPTION);
@@ -786,7 +763,8 @@ public class AfmDisplay{
 						System.out.println("Alpha: " + alphaField.getText());
 						System.out.println("Spring: " + springField.getText());
 						System.out.println("Sensitivity: " + sensitivityField.getText());
-						String[] configs = {poissonField.getText(), alphaField.getText(), springField.getText(), sensitivityField.getText()};
+						System.out.println("Iterations: " + iterationsField.getText());
+						String[] configs = {poissonField.getText(), alphaField.getText(), springField.getText(), sensitivityField.getText(), iterationsField.getText()};
 						manager.setConfigValues(configs);
 				}
 			}
@@ -838,14 +816,14 @@ public class AfmDisplay{
 	 * Check if the inputs are numbers. Defunct. To be removed
 	 * @return if four of core fields are numbers
 	 */
-	private boolean inputsChecked() //TODO A bit defunct, change accordingly
-	{
-		boolean sff = FileParser.isDouble(sensFactorField.getText());
-		//boolean scf = FileParser.isDouble(sprConstField.getText());
-		//boolean af = FileParser.isDouble(alphaField.getText());
-		boolean izf = FileParser.isDouble(impactZField.getText());
-		return(sff && izf);
-	}
+//	private boolean inputsChecked() //TODO A bit defunct, change accordingly
+//	{
+//		boolean sff = FileParser.isDouble(sensFactorField.getText());
+//		//boolean scf = FileParser.isDouble(sprConstField.getText());
+//		//boolean af = FileParser.isDouble(alphaField.getText());
+//		boolean izf = FileParser.isDouble(impactZField.getText());
+//		return(sff && izf);
+//	}
 	
 	/**
 	 * Updates the value of clickedZ

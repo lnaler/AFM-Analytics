@@ -6,27 +6,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import javax.swing.JTextArea;
-
-import org.apache.commons.math3.fitting.WeightedObservedPoint;
-import org.ejml.data.DenseMatrix64F;
-import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
-import org.jfree.chart.axis.NumberAxis;
-import org.jfree.chart.plot.PlotOrientation;
-import org.jfree.data.xy.XYDataset;
-import org.jfree.data.xy.XYSeries;
-import org.jfree.data.xy.XYSeriesCollection;
-
 import ln.afm.gui.AfmDisplay;
 import ln.afm.model.CurveData;
 import ln.afm.model.FileParser;
 import ln.afm.model.SaveFile;
-import ln.afm.solver.DoglegLS;
 import ln.afm.solver.DoglegLSLM;
+import ln.afm.solver.GeneticLinReg;
 import ln.afm.solver.Point2D;
-import ln.afm.solver.RobustFit;
 
 public class Manager {
 	
@@ -38,7 +26,7 @@ public class Manager {
 	boolean goodFit = true;
 	
 	static String configFile = "afm-local.config";
-	static int numConfigs = 4; 
+	static int numConfigs = 5; 
 	
 	public static final int JPEG = 0;
 	public static final int PNG = 1;
@@ -79,14 +67,21 @@ public class Manager {
 	 * Create our solver and fit it to our data points
 	 * @return {Slope, 2 (exponent), 0, 0}
 	 */
-	public static double[] fitMatrix(List<Point2D> dlPoints)
+	public static double[] fitMatrix(List<Point2D> dlPoints, int iterations)
 	{
 		double coeffs[] = {0, 2.0}; //right now we're forcing it to ax^2
 		DoglegLSLM dlSolver = new DoglegLSLM();
-		coeffs[0] = dlSolver.getFit(dlPoints);
+		coeffs[0] = dlSolver.getFit(dlPoints, iterations);
         System.out.print("Curve Slope: " + coeffs[0] + " Exp: " + coeffs[1] + "\n");
         double[] results = {coeffs[0], coeffs[1], 0, 0}; //TODO update to remove old linear vars
         return results;
+		
+//		double coeffs[] = {0, 2.0};
+//		GeneticLinReg glr = new GeneticLinReg(dlPoints, iterations);
+//		glr.run();
+//		coeffs[0] = glr.getSlope();
+//		double[] results = {coeffs[0], coeffs[1], 0 ,0};
+//		return results;
 	}
 	
 	/**
@@ -180,6 +175,8 @@ public class Manager {
 		//allData.get(currentData).setPoissonsRatio(0.25);
 		
 		allData.get(currentData).makeLimited(limitZ);
+		
+		allData.get(currentData).setNumIterations(((Number)configs[4]).intValue());
 	}
 	
 	public void setConfigValues(String[] values)
@@ -212,9 +209,11 @@ public class Manager {
 		}
 		if(!fileExists)
 		{
-			String[] temp = new String[results.length];
+			String[] temp = new String[numConfigs];
 			Arrays.fill(results, 0.0);
 			Arrays.fill(temp, "0");
+			results[4] = 5000;
+			temp[4] = "5000";
 			setConfigValues(temp);
 		}
 		return results;
@@ -306,7 +305,7 @@ public class Manager {
 				extension = ".jpg";
 			}
 			File rawName = new File(savePath, "Raw - " + saveFile + extension);
-			File forceName = new File(savePath, "Raw - " + saveFile + extension);
+			File forceName = new File(savePath, "Force - " + saveFile + extension);
 			
 			SaveFile saver = new SaveFile(filePath, true);
 			saver.write(saveData.print(saveFile));

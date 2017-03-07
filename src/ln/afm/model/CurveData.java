@@ -5,34 +5,20 @@ import java.util.ArrayList;
 import java.util.List;
 //import java.util.logging.Logger;
 
-import javax.swing.JTextArea;
-
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
-
-import javax.swing.JTextArea;
 
 import org.apache.commons.math3.fitting.WeightedObservedPoint;
 import org.ejml.data.DenseMatrix64F;
-import org.jfree.chart.ChartFactory;
-import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.NumberAxis;
-import org.jfree.chart.plot.PlotOrientation;
-import org.jfree.data.xy.XYDataset;
-import org.jfree.data.xy.XYSeries;
-import org.jfree.data.xy.XYSeriesCollection;
-
 import ln.afm.gui.AfmDisplay;
 import ln.afm.manager.Manager;
 import ln.afm.model.CurveData;
-import ln.afm.solver.DoglegLS;
-import ln.afm.solver.DoglegLSLM;
 import ln.afm.solver.Point2D;
-import ln.afm.solver.RobustFit;
 
 /**
  * Data class that holds the user raw data and conditions
@@ -46,8 +32,6 @@ public class CurveData {
 	private double sprConstant;
 	private double alpha;
 	private double impactZ;
-	private JTextArea userLog;
-	
 	private boolean hasLimit;
 	private double limitPercent;
 	private double gelSize;
@@ -67,6 +51,7 @@ public class CurveData {
 	private double youngs;
 	
 	private boolean hasRun;
+	private int numIterations;
 	
 	private List<Double> zdistValues = new ArrayList<Double>();
 	private List<Double> voltValues = new ArrayList<Double>();
@@ -522,7 +507,7 @@ public class CurveData {
 		maxY = data.getMaxY();
 		avgY = tempYAvg/(last-start); //We need this to calculate R
 		
-		double[] trends = Manager.fitMatrix(dlPoints);
+		double[] trends = Manager.fitMatrix(dlPoints, numIterations);
 		slope = trends[0];
 		exponent = trends[1];
 		XYSeries powTrend = new XYSeries("power");
@@ -620,7 +605,12 @@ public class CurveData {
 			SSE = SSE + Math.pow((point.getY() - predY), 2);
 			SSTO = SSTO + Math.pow((point.getY() - avgY), 2);
 		}
+		System.out.println("SSE: " + SSE + ", SSTO: " + SSTO);
 		double result = (1.0-(SSE/SSTO));
+		if(result < 0)
+		{
+			result = 0;
+		}
 		return result;
 	}
 
@@ -670,5 +660,13 @@ public class CurveData {
 		}
 		output.add("===========================================");
 		return output;
+	}
+
+	public int getNumIterations() {
+		return numIterations;
+	}
+
+	public void setNumIterations(int numIterations) {
+		this.numIterations = numIterations;
 	}
 }

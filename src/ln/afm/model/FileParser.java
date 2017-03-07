@@ -2,16 +2,15 @@ package ln.afm.model;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Scanner;
-//import java.util.logging.Logger;
-import javax.swing.JTextArea;
 
 /**
  * Parses a file and reads in the data
@@ -19,8 +18,6 @@ import javax.swing.JTextArea;
  *
  */
 public class FileParser {
-	//private static final Logger LOGGER = Logger.getLogger(FileParser.class.getName() ); //TODO Implement logging
-	private JTextArea userLog;
 	private CurveData userCurve;
 	private String[] units;
 	//final static Charset ENCODING = StandardCharsets.UTF_8;
@@ -43,7 +40,7 @@ public class FileParser {
 	 */
 	public boolean readFile (File inFile) throws IOException
 	{
-	    try (BufferedReader reader = new BufferedReader(new FileReader(inFile))){
+	    try (BufferedReader reader = new BufferedReader(new InputStreamReader((new FileInputStream(inFile)), "WINDOWS-1252"))){
 	      String line = null;
 	      //userLog.append("Attempting to read data..." +"\n");
 	      boolean unitsChecked = false;

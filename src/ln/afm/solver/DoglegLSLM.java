@@ -32,7 +32,7 @@ import java.util.List;
 
 public class DoglegLSLM {
 	
-	public double getFit(List<Point2D> points) {
+	public double getFit(List<Point2D> points, int iterations) {
 		// Define the function being optimized and create the optimizer
 		UnconstrainedLeastSquares optimizer = FactoryOptimization.leastSquaresLM(1e-3, true);
 		PowerFxn fxn = new PowerFxn(points);
@@ -45,8 +45,8 @@ public class DoglegLSLM {
 
 		// iterate 500 times or until it converges.
 		// Manually iteration is possible too if more control over is required
-		UtilOptimize.process(optimizer,5000); //TODO give access to this
-
+		UtilOptimize.process(optimizer, iterations); //TODO give access to this
+		System.out.println("Num iterations: " + iterations);
 		double found[] = optimizer.getParameters();
 
 		if(Double.isNaN(optimizer.getFunctionValue()))
