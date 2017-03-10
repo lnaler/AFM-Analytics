@@ -66,9 +66,7 @@ import javax.swing.DefaultListModel;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-
 import javax.swing.JMenuBar;
-import javax.swing.JSeparator;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import java.awt.SystemColor;
@@ -157,9 +155,9 @@ public class AfmDisplay{
 		frmAfmanalytics.getContentPane().setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 16));
 		frmAfmanalytics.setTitle("AFM-Analytics");
 		frmAfmanalytics.setSize(800, 600);
-		frmAfmanalytics.setLocationByPlatform(true);
+		frmAfmanalytics.setLocationRelativeTo(null);
 		frmAfmanalytics.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frmAfmanalytics.getContentPane().setLayout(new MigLayout("", "[140.00px:137.00px,grow][95.00px:95.00px,grow][49.00px:49.00px][][72.00px:84.00px][30px:50.00px][30px:30px][72.00px:72.00px][72.00px:72.00px,grow][35px:35.00px][30px:30px][30px:30px]", "[28px:28px][28px:28px][28px:28px][28px:28px][28px:28px][28px:28px][28px:28px][28:28][28px:28px][15px:15.00px][28px:28px,grow][28px:28px,grow][28px:28px][28px:28px][28px:28px][28px:28px]"));
+		frmAfmanalytics.getContentPane().setLayout(new MigLayout("", "[140.00px:137.00px,grow][95.00px:95.00px,grow][49.00px:49.00px][72.00px:84.00px][30px:50.00px][30px:17.00px][72.00px:72.00px][][72.00px:72.00px,grow][35px:35.00px][][30px:30px][30px:30px]", "[28px:28px][28px:28px][28px:28px][28px:28px][28px:28px][28px:28px][28px:28px][28:28][28px:28px][15px:15.00px][28px:28px,grow][][1:1:1][28px:28px,grow][28px:28px][28px:28px][28px:28px]"));
 		//frmAfmanalytics.getContentPane().add(fxPanel, "flowy,cell 0 0 7 10,grow");
 		//FXPanels have to be on a separate thread. Initializing it now.
 		
@@ -182,15 +180,18 @@ public class AfmDisplay{
 		//frmAfmanalytics.getContentPane().add(chartPanel, "cell 7 0 5 10,grow");
 		
 		JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, fxPanel, chartPanel);
-		frmAfmanalytics.getContentPane().add(splitPane, "cell 0 0 12 11,grow");
+		frmAfmanalytics.getContentPane().add(splitPane, "cell 0 0 13 11,grow");
 		splitPane.setOneTouchExpandable(true);
 		splitPane.setDividerLocation(400);
+		
+//		Component verticalGlue = Box.createVerticalGlue();
+//		frmAfmanalytics.getContentPane().add(verticalGlue, "cell 0 11 13 1");
 		
 		//Clears the voltage-distance chart (raw data)
 		JButton btnClearData = new JButton("Clear Data");
 		btnClearData.setEnabled(false);
 		btnClearData.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 18));
-		frmAfmanalytics.getContentPane().add(btnClearData, "cell 0 11,growx");
+		frmAfmanalytics.getContentPane().add(btnClearData, "cell 0 13,growx");
 		btnClearData.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent arg0) {
@@ -208,7 +209,7 @@ public class AfmDisplay{
 		JButton btnView = new JButton("View");
 		btnView.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 18));
 		btnView.setEnabled(false);
-		frmAfmanalytics.getContentPane().add(btnView, "cell 1 11,growx");
+		frmAfmanalytics.getContentPane().add(btnView, "cell 1 13,growx");
 		btnView.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent arg0) {
@@ -231,11 +232,23 @@ public class AfmDisplay{
 			}
 		});
 		
+		//Clears the Force-Distance Chart //TODO Fix this
+		JButton btnClearChart = new JButton("Clear Chart");
+		btnClearChart.setEnabled(false);
+		btnClearChart.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 18));
+		frmAfmanalytics.getContentPane().add(btnClearChart, "cell 5 13 2 1,growx");
+		btnClearChart.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent arg0) {
+				chartPanel.setChart(new JFreeChart(new XYPlot()));
+			}
+		});
+		
 		//Runs the  core analysis
 		JButton btnRun = new JButton("Run");
 		btnRun.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 18));
 		btnRun.setEnabled(false);
-		frmAfmanalytics.getContentPane().add(btnRun, "cell 2 11 3 1,growx");
+		frmAfmanalytics.getContentPane().add(btnRun, "cell 2 13 2 1,growx");
 		btnRun.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent arg0) {
@@ -246,6 +259,7 @@ public class AfmDisplay{
 				manager.setParameters(inputs, limitZ);
 				chartPanel.setChart(manager.run(goodFit));
 				updateResults(manager.getResults());
+				btnClearChart.setEnabled(true);
 //				if(!isReady)
 //				{
 //					infoBox("All variables must be numeric", "ERROR");
@@ -253,6 +267,7 @@ public class AfmDisplay{
 			}
 		});
 		
+		//This is where we keep our files, and keep track of which one(s) are selected
 		listModel = new DefaultListModel<String>();
 		fileList = new JList<String>(listModel);
 		fileList.setVisibleRowCount(10);
@@ -282,23 +297,10 @@ public class AfmDisplay{
 			
 		});
 		
-		
-		//Clears the Force-Distance Chart //TODO Fix this
-		JButton btnClearChart = new JButton("Clear Chart");
-		btnClearChart.setEnabled(false);
-		btnClearChart.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 18));
-		frmAfmanalytics.getContentPane().add(btnClearChart, "cell 6 11 2 1,growx");
-		btnClearChart.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseClicked(MouseEvent arg0) {
-				chartPanel.removeAll();
-			}
-		});
-		
 		//Clears the log
 		JButton btnClearFiles = new JButton("Clear Files");
 		btnClearFiles.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 18));
-		frmAfmanalytics.getContentPane().add(btnClearFiles, "cell 8 11 2 1,growx");
+		frmAfmanalytics.getContentPane().add(btnClearFiles, "cell 8 13 2 1,growx");
 		btnClearFiles.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent arg0) {				
@@ -313,7 +315,7 @@ public class AfmDisplay{
 		//Browses to and reads in a selected file
 		JButton btnBrowse = new JButton("  Browse  ");
 		btnBrowse.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 18));
-		frmAfmanalytics.getContentPane().add(btnBrowse, "cell 10 11 2 1,growx");
+		frmAfmanalytics.getContentPane().add(btnBrowse, "cell 11 13 2 1,growx");
 		btnBrowse.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent arg0) {
@@ -346,45 +348,10 @@ public class AfmDisplay{
 			}
 		});
 		
-		JScrollPane scrollPane = new JScrollPane(fileList);
-		scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-		scrollPane.setViewportBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
-		frmAfmanalytics.getContentPane().add(scrollPane, "cell 8 12 4 4,grow");
-		
-		ButtonGroup fitRadButtons = new ButtonGroup();
-		zLimit = 20d;
-		
-		JSeparator separator = new JSeparator();
-		separator.setOrientation(SwingConstants.VERTICAL);
-		frmAfmanalytics.getContentPane().add(separator, "cell 3 12 1 4");
-		
-		JRadioButton rdbtnForceFit = new JRadioButton("Force Fit");
-		rdbtnForceFit.setFont(new Font("Tahoma", Font.PLAIN, 18));
-		frmAfmanalytics.getContentPane().add(rdbtnForceFit, "cell 4 12 2 1");
-		rdbtnForceFit.addItemListener(new ItemListener() {
-			public void itemStateChanged(ItemEvent e) {
-				if(e.getStateChange() == ItemEvent.SELECTED)
-				{
-					goodFit = false;
-				}
-				if(e.getStateChange() == ItemEvent.DESELECTED)
-				{
-					goodFit = true;
-				}
-			}
-		});
-		fitRadButtons.add(rdbtnForceFit);
-		
-		JRadioButton rdbtnGoodFit = new JRadioButton("Good Fit");
-		rdbtnGoodFit.setFont(new Font("Tahoma", Font.PLAIN, 18));
-		rdbtnGoodFit.setSelected(true);
-		frmAfmanalytics.getContentPane().add(rdbtnGoodFit, "cell 6 12 2 1");
-		fitRadButtons.add(rdbtnGoodFit);
-		
 		//Do we want to limit how much of the data we use? Defaults to 20%
 		chckbxIndentThreshold = new JCheckBox("Limit Indent");
 		chckbxIndentThreshold.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 18));
-		frmAfmanalytics.getContentPane().add(chckbxIndentThreshold, "cell 0 13");
+		frmAfmanalytics.getContentPane().add(chckbxIndentThreshold, "cell 0 14");
 		chckbxIndentThreshold.addItemListener(new ItemListener() {
 			public void itemStateChanged(ItemEvent e) {
 				//If we do want to limit it, enable relevant fields
@@ -407,7 +374,7 @@ public class AfmDisplay{
 		indentLimit = new JFormattedTextField(NumberFormat.getNumberInstance());
 		indentLimit.setValue(new Double(20));
 		indentLimit.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 18));
-		frmAfmanalytics.getContentPane().add(indentLimit, "cell 1 13");
+		frmAfmanalytics.getContentPane().add(indentLimit, "cell 1 14,growx");
 		indentLimit.setEditable(false);
 		indentLimit.setColumns(10);
 		//We need to update zLimit if indentLimit is changed
@@ -433,7 +400,7 @@ public class AfmDisplay{
 		
 		JLabel label = new JLabel("(%)");
 		label.setFont(new Font("Tahoma", Font.PLAIN, 16));
-		frmAfmanalytics.getContentPane().add(label, "cell 2 13,alignx left");
+		frmAfmanalytics.getContentPane().add(label, "cell 2 14,alignx left");
 		
 		//Results field for slope.
 		txtSlope = new JTextField();
@@ -442,7 +409,7 @@ public class AfmDisplay{
 		txtSlope.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 18));
 		txtSlope.setBorder(BorderFactory.createEmptyBorder());
 		txtSlope.setText("Slope: ");
-		frmAfmanalytics.getContentPane().add(txtSlope, "cell 4 13 2 1,growx");
+		frmAfmanalytics.getContentPane().add(txtSlope, "cell 3 14 2 1,growx");
 		txtSlope.setColumns(10);
 		
 		//Results field for exponent.
@@ -452,19 +419,27 @@ public class AfmDisplay{
 		txtExp.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 18));
 		txtExp.setText("Exp:");
 		txtExp.setBorder(BorderFactory.createEmptyBorder());
-		frmAfmanalytics.getContentPane().add(txtExp, "cell 6 13 2 1,growx");
+		frmAfmanalytics.getContentPane().add(txtExp, "cell 5 14 2 1,growx");
 		txtExp.setColumns(10);
+		
+		JScrollPane scrollPane = new JScrollPane(fileList);
+		scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+		scrollPane.setViewportBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
+		frmAfmanalytics.getContentPane().add(scrollPane, "cell 8 14 5 3,grow");
+		
+		ButtonGroup fitRadButtons = new ButtonGroup();
+		zLimit = 20d;
 		
 		JLabel lblGelThickness = new JLabel("Gel Thickness");
 		lblGelThickness.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 18));
-		frmAfmanalytics.getContentPane().add(lblGelThickness, "cell 0 14,alignx trailing");
+		frmAfmanalytics.getContentPane().add(lblGelThickness, "cell 0 15,alignx trailing");
 		
 		//Formatted field associated with gelThickness
 		gelThicknessField = new JFormattedTextField(NumberFormat.getNumberInstance());
 		gelThicknessField.setEditable(false);
 		gelThicknessField.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 18));
 		gelThicknessField.setValue(new Double(0));
-		frmAfmanalytics.getContentPane().add(gelThicknessField, "cell 1 14,growx");
+		frmAfmanalytics.getContentPane().add(gelThicknessField, "cell 1 15,growx");
 		//Update gelThickness if the field changes
 		gelThicknessField.getDocument().addDocumentListener(new DocumentListener() { //http://stackoverflow.com/questions/3953208/value-change-listener-to-jtextfield
 			public void changedUpdate(DocumentEvent e) {
@@ -488,8 +463,8 @@ public class AfmDisplay{
 		
 		JLabel lblnm2 = new JLabel("(nm)");
 		lblnm2.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 16));
-		frmAfmanalytics.getContentPane().add(lblnm2, "cell 2 14,alignx left");
-				
+		frmAfmanalytics.getContentPane().add(lblnm2, "cell 2 15,alignx left");
+		
 		//Results field for R-Squared value
 		txtRsquared = new JTextField();
 		txtRsquared.setBackground(UIManager.getColor("Button.background"));
@@ -497,20 +472,20 @@ public class AfmDisplay{
 		txtRsquared.setEditable(false);
 		txtRsquared.setText("R-Squared:");
 		txtRsquared.setBorder(BorderFactory.createEmptyBorder());
-		frmAfmanalytics.getContentPane().add(txtRsquared, "cell 4 14 4 1,growx");
+		frmAfmanalytics.getContentPane().add(txtRsquared, "cell 3 15 4 1,growx");
 		txtRsquared.setColumns(10);
 		
 		//Do we want to automatically run without Z0 input? No. Not yet.
-		chckbxSelectZ = new JCheckBox("   Select Z0");
+		chckbxSelectZ = new JCheckBox("     Select Z0");
 		chckbxSelectZ.setEnabled(false);
 		chckbxSelectZ.setSelected(true);
 		chckbxSelectZ.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 18));
-		frmAfmanalytics.getContentPane().add(chckbxSelectZ, "cell 0 15,alignx right");
+		frmAfmanalytics.getContentPane().add(chckbxSelectZ, "cell 0 16,alignx right");
 		
 		//Formatted field associated with ImpactZ
 		impactZField.setValue(new Double(0));
 		impactZField.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 18));
-		frmAfmanalytics.getContentPane().add(impactZField, "cell 1 15,growx");
+		frmAfmanalytics.getContentPane().add(impactZField, "cell 1 16,growx");
 		impactZField.setColumns(10);
 		//If this field changes, we want to know
 		impactZField.getDocument().addDocumentListener(new DocumentListener() { //http://stackoverflow.com/questions/3953208/value-change-listener-to-jtextfield
@@ -545,10 +520,10 @@ public class AfmDisplay{
 			}
 		
 		});
-
-		JLabel lblnm_1 = new JLabel("(nm)");
-		lblnm_1.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 16));
-		frmAfmanalytics.getContentPane().add(lblnm_1, "cell 2 15,alignx left");
+		
+				JLabel lblnm_1 = new JLabel("(nm)");
+				lblnm_1.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 16));
+				frmAfmanalytics.getContentPane().add(lblnm_1, "cell 2 16,alignx left");
 		
 		//Result field for Young's Modulus
 		txtYoungsModulus = new JTextField();
@@ -557,9 +532,11 @@ public class AfmDisplay{
 		txtYoungsModulus.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 18));
 		txtYoungsModulus.setText("Young's Modulus: ");
 		txtYoungsModulus.setBorder(BorderFactory.createEmptyBorder());
-		frmAfmanalytics.getContentPane().add(txtYoungsModulus, "cell 4 15 4 1,grow");
+		frmAfmanalytics.getContentPane().add(txtYoungsModulus, "cell 3 16 4 1,grow");
 		txtYoungsModulus.setColumns(10);
 		
+		//The following section is menu bar functionality
+		//-----------------------------------------------------
 		JMenuBar menuBar = new JMenuBar();
 		menuBar.setBorderPainted(false);
 		menuBar.setFont(new Font("Segoe UI", Font.PLAIN, 16));
@@ -572,6 +549,7 @@ public class AfmDisplay{
 		mnFile.setFont(new Font("Segoe UI", Font.PLAIN, 18));
 		menuBar.add(mnFile);
 		
+		//Exports one or more files. Includes associated parameters/results/graphs
 		JMenuItem mntmExport = new JMenuItem("Export File(s)");
 		mntmExport.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ev) {
@@ -683,6 +661,7 @@ public class AfmDisplay{
 		mnEdit.setFont(new Font("Segoe UI", Font.PLAIN, 18));
 		menuBar.add(mnEdit);
 		
+		//Less frequently used parameters were moved here. Reads from and writes to a local config file
 		JMenuItem mntmPreferences = new JMenuItem("Preferences");
 		mntmPreferences.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ev) {
@@ -773,6 +752,47 @@ public class AfmDisplay{
 		mntmPreferences.setFont(new Font("Segoe UI", Font.PLAIN, 20));
 		mnEdit.add(mntmPreferences);
 		
+		JMenu mnGraphFit = new JMenu("Graph Fit");
+		mnGraphFit.setFont(new Font("Segoe UI", Font.PLAIN, 18));
+		menuBar.add(mnGraphFit);
+		
+		JRadioButton rdbtnGoodFit = new JRadioButton("Levenberg-Marquadt");
+		mnGraphFit.add(rdbtnGoodFit);
+		rdbtnGoodFit.setHorizontalAlignment(SwingConstants.CENTER);
+		rdbtnGoodFit.setFont(new Font("Tahoma", Font.PLAIN, 18));
+		rdbtnGoodFit.setSelected(true);
+		rdbtnGoodFit.addItemListener(new ItemListener() {
+			public void itemStateChanged(ItemEvent e) {
+				if(e.getStateChange() == ItemEvent.SELECTED)
+				{
+					goodFit = true;
+				}
+				if(e.getStateChange() == ItemEvent.DESELECTED)
+				{
+					goodFit = false;
+				}
+			}
+		});
+		fitRadButtons.add(rdbtnGoodFit);
+		
+		
+		JRadioButton rdbtnForceFit = new JRadioButton("Genetic Algorithm");
+		mnGraphFit.add(rdbtnForceFit);
+		rdbtnForceFit.setFont(new Font("Tahoma", Font.PLAIN, 18));
+		rdbtnForceFit.addItemListener(new ItemListener() {
+			public void itemStateChanged(ItemEvent e) {
+				if(e.getStateChange() == ItemEvent.SELECTED)
+				{
+					goodFit = false;
+				}
+				if(e.getStateChange() == ItemEvent.DESELECTED)
+				{
+					goodFit = true;
+				}
+			}
+		});
+		fitRadButtons.add(rdbtnForceFit);
+		
 		JMenu mnView = new JMenu("View");
 		mnView.setFont(new Font("Segoe UI", Font.PLAIN, 18));
 		mnView.setEnabled(false);
@@ -789,6 +809,10 @@ public class AfmDisplay{
 		
 	}
 	
+	/**
+	 * Sets the parameter values to given values. Used for displaying information on a previously run graph.
+	 * @param previousParameters The parameters from the previous run
+	 */
 	protected void updateParameters(double[] previousParameters) {
 		gelThicknessField.setValue(previousParameters[0]);
 		limitZ = (previousParameters[3] == 1.0);
@@ -801,6 +825,10 @@ public class AfmDisplay{
 		}
 	}
 
+	/**
+	 * Adds files to the list of files displayed to the user. Files with the same name as a previous file are not added.
+	 * @param updateFiles The files to be added
+	 */
 	private void updateListModel(File[] updateFiles) {
 		for(int i=0; i < updateFiles.length;i++)
 		{			

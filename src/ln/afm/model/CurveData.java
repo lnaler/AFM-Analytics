@@ -109,67 +109,130 @@ public class CurveData {
 		return true;
 	}
 
+	/**
+	 * Sensitivity getter
+	 * @return sensitivity factor
+	 */
 	public double getSensitivity(){
 		return sensFactor;
 	}
+	/**
+	 * Sensitivity setter
+	 * @param newSensFactor new Sensitivity Factor
+	 */
 	public void setSensitivity(double newSensFactor){
 		sensFactor = newSensFactor;
 	}
 	
+	/**
+	 * Spring Constant getter
+	 * @return spring constant
+	 */
 	public double getSpringConstant(){
 		return sprConstant;
 	}
+	/**
+	 * Spring Constant setter
+	 * @param newSprConstant new Spring Constant
+	 */
 	public void setSpringConstant(double newSprConstant){
 		sprConstant = newSprConstant;
 	}
 	
+	/**
+	 * Alpha getter
+	 * @return alpha angle (degrees)
+	 */
 	public double getAlpha(){
 		return alpha;
 	}
+	/**
+	 * Alpha setter
+	 * @param newAlpha new alpha angle (degrees)
+	 */
 	public void setAlpha(double newAlpha){
 		alpha = newAlpha;
 		tanAlpha = Math.tan(Math.toRadians(newAlpha));
 	}
 	
+	/**
+	 * Impact Z getter
+	 * @return the location of impact
+	 */
 	public double getImpactZ(){
 		return impactZ;
 	}
+	/**
+	 * Impact Z setter
+	 * @param newImpactZ the new location of impact
+	 */
 	public void setImpactZ(double newImpactZ){
 		impactZ = newImpactZ;
 	}
 	
+	/**
+	 * Checks if the indent is limited
+	 * @return true if indent is limited
+	 */
 	public boolean isLimited()
 	{
 		return hasLimit;
 	}
+	/**
+	 * Sets whether the indent is limited
+	 * @param ifLimited true if indent is limited
+	 */
 	public void makeLimited(boolean ifLimited)
 	{
 		hasLimit = ifLimited;
 	}
 	
-	
+	/**
+	 * Gets by what percent the indent was limited
+	 * @return the limit percent
+	 */
 	public double getLimitPercent()
 	{
 		return limitPercent;
 	}
+	/**
+	 * Set the percent the indent was limited
+	 * @param pct the new limit percent
+	 */
 	public void setLimitPercent(double pct)
 	{
 		limitPercent = pct;
 	}
 	
+	/**
+	 * Gets the gel size
+	 * @return the gel size
+	 */
 	public double getGelSize()
 	{
 		return gelSize;
 	}
+	/**
+	 * Sets the gel size
+	 * @param newGelSize the new gel size
+	 */
 	public void setGelSize(double newGelSize)
 	{
 		gelSize = newGelSize;
 	}
 	
+	/**
+	 * Gets Poissons Ratio
+	 * @return poissons ratio
+	 */
 	public double getPoissonsRatio()
 	{
 		return poissonsRatio;
 	}
+	/**
+	 * Sets poissons ratio
+	 * @param new poissons ratio
+	 */
 	public void setPoissonsRatio(double newPoissonsRatio)
 	{
 		poissonsRatio = newPoissonsRatio;
@@ -196,10 +259,18 @@ public class CurveData {
 		return true;
 	}
 
+	/**
+	 * Gets the current units
+	 * @return current units
+	 */
 	public String[] getUnits()
 	{
 		return units;
 	}
+	/**
+	 * Sets the current units
+	 * @param newUnits the new units
+	 */
 	public void setUnits(String[] newUnits)
 	{
 		units = newUnits;
@@ -454,15 +525,31 @@ public class CurveData {
 	 */
 	private int getLastNaN(int column)
 	{
+//		int currentLast = -1;
+//		for(int i=0; i < dataMatrix.numRows; i++)
+//		{
+//			if(Double.isNaN(dataMatrix.get(i, column)))
+//			{
+//				currentLast = i;
+//			}
+//			i++;
+//		}
+//		System.out.println("Last NaN at: " + currentLast);
+//		return currentLast;
+		
 		int currentLast = -1;
-		for(int i=0; i < dataMatrix.numRows; i++)
+		int i = dataMatrix.numRows-1;
+		boolean lastFound = false;
+		while(i >= 0 && !lastFound)
 		{
 			if(Double.isNaN(dataMatrix.get(i, column)))
 			{
 				currentLast = i;
+				lastFound = true;
 			}
-			i++;
+			i--;
 		}
+		System.out.println("Last NaN at: " + currentLast);
 		return currentLast;
 	}
 	
@@ -472,7 +559,7 @@ public class CurveData {
 	 */
 	private XYDataset toWeightedMatrix()
 	{
-		int start = getLastNaN(10);
+		int start = Math.max(getLastNaN(10), getLastNaN(9));
 		int last = getLimit();
 		if(last <= start) //If the last NaN occurs after the data limit
 		{
@@ -498,6 +585,7 @@ public class CurveData {
         	dlPoints.add(new Point2D(Math.log(xval), Math.log(yval)));
         	data.add(xval, yval);
         	tempYAvg = tempYAvg + yval;
+        	System.out.println("i: " + i + ", logx: " + Math.log(xval) + ", logy: " + Math.log(yval));
 		}
 		
 		minX = data.getMinX();
@@ -560,6 +648,10 @@ public class CurveData {
 		hasRun = true;
 	}
 	
+	/**
+	 * Returns the force chart
+	 * @return the force chart of the previous run
+	 */
 	public JFreeChart getXYChart()
 	{
 		return forceData;
@@ -605,7 +697,7 @@ public class CurveData {
 			SSE = SSE + Math.pow((point.getY() - predY), 2);
 			SSTO = SSTO + Math.pow((point.getY() - avgY), 2);
 		}
-		System.out.println("SSE: " + SSE + ", SSTO: " + SSTO);
+		//System.out.println("SSE: " + SSE + ", SSTO: " + SSTO);
 		double result = (1.0-(SSE/SSTO));
 		if(result < 0)
 		{
@@ -614,32 +706,64 @@ public class CurveData {
 		return result;
 	}
 
-	
+	/**
+	 * Gets the exponent of the fitted curve (pretty much always 2)
+	 * @return the exponent of the fitted curve
+	 */
 	public double getExponent() {
 		return exponent;
 	}
-
+	/**
+	 * Sets the exponent of the fitted curve found
+	 * @param exponent the new exponent of the fitted curve
+	 */
 	public void setExponent(double exponent) {
 		this.exponent = exponent;
 	}
 	
+	/**
+	 * Gets the slope of the fitted curve
+	 * @return the slope of the fitted curve
+	 */
 	public double getSlope() {
 		return slope;
 	}
-
+	/**
+	 * Sets the slope of the fitted curve
+	 * @param slope the new slope
+	 */
 	public void setSlope(double slope) {
 		this.slope = slope;
 	}
 	
+	/**
+	 * returns the data in DogLeg format
+	 * @return a list of dogleg points
+	 */
 	public List<Point2D> getDogLegPoints()
 	{
 		return dlPoints;
 	}
 	
+//	public ArrayList<WeightedObservedPoint> getApachePoints()
+//	{
+//		return points;
+//	}
+	
+	/**
+	 * Checks if the data has been run
+	 * @return true if the data has been run
+	 */
 	public boolean hasRun()
 	{
 		return hasRun;
 	}
+	
+	/**
+	 * Gets the list of strings to export
+	 * @param fileName name of the file
+	 * @return the list of strings to save
+	 */
 	public List<String> print(String fileName)
 	{
 		List<String> output = new ArrayList<String>();
@@ -662,10 +786,17 @@ public class CurveData {
 		return output;
 	}
 
+	/**
+	 * Gets the number of iterations
+	 * @return the number of iterations
+	 */
 	public int getNumIterations() {
 		return numIterations;
 	}
-
+	/**
+	 * Sets the number of iterations
+	 * @param numIterations the new number of iterations
+	 */
 	public void setNumIterations(int numIterations) {
 		this.numIterations = numIterations;
 	}

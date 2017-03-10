@@ -7,7 +7,7 @@
     <property name="dir.workspace" value="${dir.buildfile}/../.."/>
     <property name="dir.jarfile" value="${dir.workspace}/AFM-Analytics/dist"/>
     <target name="create_run_jar">
-        <jar destfile="${dir.jarfile}/AFM-Analytics-v0.1.0.jar">
+        <jar destfile="${dir.jarfile}/AFM-Analytics-v0.3.0.jar">
             <manifest>
                 <attribute name="Main-Class" value="org.eclipse.jdt.internal.jarinjarloader.JarRsrcLoader"/>
                 <attribute name="Rsrc-Main-Class" value="ln.afm.gui.AfmDisplay"/>
@@ -52,12 +52,12 @@
 	<launch4j configFile = "${dir.buildfile}/exe-config.xml" />
 	<taskdef name="bundleapp" 
 		classname="com.oracle.appbundler.AppBundlerTask"
-		classpath="${ant.home}/lib/appbundler-1.0.jar"/>
+		classpath="${ant.home}/lib/appbundler-0.3.0.jar"/>
     <bundleapp outputdirectory="${dir.jarfile}/"
-        name="AFM-Analytics v0.1.0"
+        name="AFM-Analytics v0.3.0"
         displayname="AFM-Analytics"
         identifier="ln.afm.gui.AfmDisplay"
         mainclassname="${dir.workspace}/AFM-Analytics/src/ln/afm/gui/AfmDisplay">
-        <classpath file="${dir.jarfile}/AFM-Analytics-v0.1.0.jar" />
+        <classpath file="${dir.jarfile}/AFM-Analytics-v0.3.0.jar" />
     </bundleapp>
 </project>

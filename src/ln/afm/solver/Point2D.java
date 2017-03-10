@@ -26,7 +26,7 @@ package ln.afm.solver;
  * @author Peter Abeles
  */
 public class Point2D {
-	double x,y;
+	public double x,y;
 
 	public Point2D(double x, double y) {
 		this.x = x;

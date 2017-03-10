@@ -32,6 +32,8 @@ import java.util.List;
 
 public class DoglegLSLM {
 	
+	//double progress = 0;
+	
 	public double getFit(List<Point2D> points, int iterations) {
 		// Define the function being optimized and create the optimizer
 		UnconstrainedLeastSquares optimizer = FactoryOptimization.leastSquaresLM(1e-3, true);
@@ -55,4 +57,15 @@ public class DoglegLSLM {
 		}
 		return found[0];
 	}
+	
+	
+	
+//	public class dlListener implements ActionListener {
+//
+//		@Override
+//		public void actionPerformed(ActionEvent arg0) {
+//			Manager.update
+//			
+//		}
+//	}
 }

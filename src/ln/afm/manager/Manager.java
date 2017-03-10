@@ -16,30 +16,51 @@ import ln.afm.solver.DoglegLSLM;
 import ln.afm.solver.GeneticLinReg;
 import ln.afm.solver.Point2D;
 
+/**
+ * Handles the go-between of the GUI and the data/solvers
+ * @author Lynette Naler
+ *
+ */
 public class Manager {
 	
+	//Our files, and associated curve data
 	List<File> allFiles = new ArrayList<File>();
 	List<CurveData> allData = new ArrayList<CurveData>();
 	private int numParsed;
 	
 	private int currentData;
-	boolean goodFit = true;
 	
+	//Where our config file is and how many parameters
 	static String configFile = "afm-local.config";
 	static int numConfigs = 5; 
 	
+	//Export as JPEG or PNG
 	public static final int JPEG = 0;
 	public static final int PNG = 1;
+	
+	//Levenberg Marquadt Algorithm?
+	private static boolean calcFit = true;
 
+	/**
+	 * Constructor
+	 */
 	public Manager() {
 		numParsed = 0;
 	}
 
+	/**
+	 * Sets the index of the data we are currently working on
+	 * @param dataIndex index of the file we are working with
+	 */
 	private void setCurrentData(int dataIndex)
 	{
 		currentData = dataIndex;
 	}
 
+	/**
+	 * Sets the index of the file we are currently working on. Sets the appropriate index in the Manager
+	 * @param index index of the file we are working with
+	 */
 	public void setCurrentFile(int index)
 	{
 		setCurrentData(index);
@@ -57,31 +78,42 @@ public class Manager {
 	/**
 	 * Calculate our matrix
 	 */
-	public void calcMatrix(boolean goodFit)
+	public void calcMatrix()
 	{
 		allData.get(currentData).calcMatrix();
 		allData.get(currentData).generateXYChart();
 	}
 	
 	/**
-	 * Create our solver and fit it to our data points
-	 * @return {Slope, 2 (exponent), 0, 0}
+	 * Create our solver (Levenberg or Genetic) and fit it to our data points
+	 * @return {Slope, 2 (exponent)}
 	 */
 	public static double[] fitMatrix(List<Point2D> dlPoints, int iterations)
 	{
-		double coeffs[] = {0, 2.0}; //right now we're forcing it to ax^2
-		DoglegLSLM dlSolver = new DoglegLSLM();
-		coeffs[0] = dlSolver.getFit(dlPoints, iterations);
-        System.out.print("Curve Slope: " + coeffs[0] + " Exp: " + coeffs[1] + "\n");
-        double[] results = {coeffs[0], coeffs[1], 0, 0}; //TODO update to remove old linear vars
-        return results;
-		
-//		double coeffs[] = {0, 2.0};
-//		GeneticLinReg glr = new GeneticLinReg(dlPoints, iterations);
-//		glr.run();
-//		coeffs[0] = glr.getSlope();
-//		double[] results = {coeffs[0], coeffs[1], 0 ,0};
-//		return results;
+		double[] results = {0.0, 0.0};
+		if(calcFit)
+		{
+			//Dogleg optimizer
+			double coeffs[] = {0, 2.0}; //right now we're forcing it to ax^2
+			DoglegLSLM dlSolver = new DoglegLSLM();
+			coeffs[0] = dlSolver.getFit(dlPoints, iterations);
+	        System.out.print("Curve Slope: " + coeffs[0] + " Exp: " + coeffs[1] + "\n");
+	        results[0] = coeffs[0];
+	        results[1] = coeffs[1];
+	        //return results;
+		}
+		if(!calcFit)
+		{
+			//Genetic Algorithm
+			double coeffs[] = {0, 2.0};
+			GeneticLinReg glr = new GeneticLinReg(dlPoints, iterations);
+			glr.run();
+			coeffs[0] = glr.getSlope();
+			results[0] = coeffs[0];
+	        results[1] = coeffs[1];
+			//return results;
+		}
+		return results;
 	}
 	
 	/**
@@ -92,7 +124,8 @@ public class Manager {
 	{
 		System.out.print("Running..." + "\n");
 		initMatrix();
-		calcMatrix(goodFit); // perform calculations
+		calcMatrix(); // perform calculations
+		Manager.calcFit = goodFit;
 		//allData.get(currentData).getXYChart(); //get chart
 		return allData.get(currentData).getXYChart();
 	}
@@ -127,6 +160,11 @@ public class Manager {
 //		return dataUpload;
 //	}
 	
+	/**
+	 * Parses an individual file and add's its data if the upload was successful
+	 * @param dataFile
+	 * @return
+	 */
 	public boolean parseFile(File dataFile)
 	{
 		boolean dataUpload = false;
@@ -149,6 +187,10 @@ public class Manager {
 		return dataUpload;
 	}
 	
+	/**
+	 * Grabs the raw data from the current data
+	 * @return a chart showing the raw data
+	 */
 	public JFreeChart viewRawGraph()
 	{
 		String[] testUnits = {"nm","V"};
@@ -157,6 +199,11 @@ public class Manager {
 		return allData.get(currentData).getRawData();
 	}
 	
+	/**
+	 * Sets the parameters in the current data based on user input and the config file
+	 * @param inputs (not used, not used, not used, impact Z, limiting percent, gel size)
+	 * @param limitZ a boolean of if the data is limited
+	 */
 	public void setParameters (double[] inputs, boolean limitZ) { //TODO ERROR HANDLING
 		double[] configs = getConfigValues();
 		
@@ -179,6 +226,10 @@ public class Manager {
 		allData.get(currentData).setNumIterations(((Number)configs[4]).intValue());
 	}
 	
+	/**
+	 * Writes given values to the config file, 0 if the value given is not a double
+	 * @param values config values (poisson, alpha, spring, sensitivity, iterations)
+	 */
 	public void setConfigValues(String[] values)
 	{
 		FileParser.removeSpaces(values);
@@ -196,6 +247,10 @@ public class Manager {
 	}
 	
 	//Poisson, alpha, spring, sensitivity
+	/**
+	 * Gets the config values from the file, or 0s if no file is present then creates a config
+	 * @return (poisson, alpha, spring, sensitivity)
+	 */
 	public double[] getConfigValues()
 	{
 		double[] results = FileParser.readConfigValues(configFile, numConfigs);
@@ -219,6 +274,11 @@ public class Manager {
 		return results;
 	}
 	
+	/**
+	 * Iterates through the files and attempts to parse. If a file fails, it's removed from the list of files.
+	 * @param dataFiles the list of files to upload
+	 * @return the list of files successfully uploaded
+	 */
 	public File[] parseFiles(File[] dataFiles)
 	{
 		
@@ -242,6 +302,10 @@ public class Manager {
 		return output;
 	}
 	
+	/**
+	 * Sets the manager's list of files to the given list of files
+	 * @param inFiles list of files the manager is taking care of
+	 */
 	private void setAllFiles(File[] inFiles)
 	{
 		for(int i=0;i < inFiles.length;i++)
@@ -253,6 +317,9 @@ public class Manager {
 		}
 	}
 	
+	/**
+	 * Clears all files and data
+	 */
 	public void clearAllFiles()
 	{
 		allFiles = new ArrayList<File>();
@@ -260,16 +327,28 @@ public class Manager {
 		numParsed = 0;
 	}
 	
+	/**
+	 * Checks if the current data has run
+	 * @return whether the current data has run
+	 */
 	public boolean hasRun()
 	{
 		return allData.get(currentData).hasRun();
 	}
 	
+	/**
+	 * Gets the force graph from the previous run
+	 * @return the force graph of the previous run
+	 */
 	public JFreeChart getPreviousRun()
 	{
 		return allData.get(currentData).getXYChart();
 	}
 	
+	/**
+	 * Gets the parameters from the previous run
+	 * @return previous parameters (gel size, impact z, limit percent, has limit (1 true))
+	 */
 	public double[] getPreviousParameters()
 	{
 		double tempGelSize = allData.get(currentData).getGelSize();
@@ -284,6 +363,12 @@ public class Manager {
 		return results;
 	}
 	
+	/**
+	 * Exports a list of files to a given location, with graphs of the given fileType
+	 * @param exportFiles the list of files to export
+	 * @param savePath path to save the files to 
+	 * @param fileType either Manager.JPEG or Manager.PNG
+	 */
 	public void export(int[] exportFiles, String savePath, int fileType)
 	{
 		System.out.println("Readying " + savePath);
@@ -339,5 +424,28 @@ public class Manager {
 			
 		}
 	}
+
+//	/**
+//	 * 
+//	 * @param inPoints
+//	 * @return
+//	 */
+//	public static ArrayList<WeightedObservedPoint> toWOPs(List<Point2D> inPoints)
+//	{
+//		ArrayList<WeightedObservedPoint> results = new ArrayList<>();
+//		for(Point2D point:inPoints)
+//		{
+//			results.add(new WeightedObservedPoint(1.0, point.x, point.y));
+//		}
+//		return results;
+//	}
 	
+	/**
+	 * Returns whether or not it's fitted using Levenberg
+	 * @return true if levenberg is used, false for genetic
+	 */
+	public boolean calcFit()
+	{
+		return calcFit;
+	}
 }

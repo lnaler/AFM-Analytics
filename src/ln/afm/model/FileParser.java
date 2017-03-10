@@ -188,6 +188,12 @@ public class FileParser {
 		return userCurve;
 	}
 	
+	/**
+	 * Reads a number of config values from the given file
+	 * @param filePath the location of the config file
+	 * @param numValues how many config values to be read in
+	 * @return the config values read in
+	 */
 	public static double[] readConfigValues(String filePath, int numValues)
 	{
 		Path file = Paths.get(filePath);

@@ -8,6 +8,7 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  */
 public class Converter {
+	//Our conversions
 	private static ConcurrentHashMap<String, Double> zUnits = new ConcurrentHashMap<String,Double>(); //http://stackoverflow.com/questions/507602/how-can-i-initialise-a-static-map
     static {
         zUnits.put("m", 1.0);
@@ -27,6 +28,13 @@ public class Converter {
 		vUnits.put("nv", 1000000000.0);
     }
 		
+    /**
+     * Get the conversion rate
+     * @param oldUnits units to be converted from
+     * @param newUnits units to be converted to
+     * @param unitType 0 if impact units, 1 if voltage units
+     * @return
+     */
 	public static double convert(String oldUnits, String newUnits, int unitType)
 	{
 		oldUnits = oldUnits.toLowerCase();

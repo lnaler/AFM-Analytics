@@ -5,6 +5,12 @@ import java.util.List;
 import java.util.Random;
 import java.util.TreeMap;
 
+/**
+ * Fits a curve of the form ax^2 using a genetic algorithm by minimizing mean square error. Adapted from matlab code 
+ * from Engineering Math Fall 2016 taught by Ryan Senger
+ * @author Lynette Naler
+ *
+ */
 public class GeneticLinReg {
 		
 	int minmax = 1; //1 maximize -1 minimize
@@ -21,6 +27,11 @@ public class GeneticLinReg {
 	
 	List<Point2D> comparePoints;
 
+	/**
+	 * Constructor
+	 * @param points the data points to compare against
+	 * @param iterations number of generations to run
+	 */
 	public GeneticLinReg(List<Point2D> points, int iterations)
 	{
 		comparePoints = points;
@@ -28,6 +39,10 @@ public class GeneticLinReg {
 		//shiftPoints();
 	}
 	
+	/**
+	 * Performs the genetic algorithm
+	 * @return true if the run is successful
+	 */
 	public boolean run()
 	{
 		
@@ -50,7 +65,7 @@ public class GeneticLinReg {
 		limits[2]=limits[1]-limits[0];
 		
 		//inititate chromosomes 
-		int chromLength = 1; 
+		//int chromLength = 1; 
 		List<Double> chrom = new ArrayList<Double>();
 		for(int i = 0; i < numChromosomes; i++)
 		{
@@ -63,7 +78,7 @@ public class GeneticLinReg {
 			{
 				nextValue = limits[0]+ rand.nextDouble()*limits[2];
 			}
-			chrom.set(i, limits[0]+ rand.nextDouble()*limits[2]);
+			chrom.set(i, nextValue);
 		}
 
 			
@@ -135,7 +150,7 @@ public class GeneticLinReg {
 				double BLX_temp2=chrom.get(tempVal);                 
 				
 				//%choose the column (gene) to manipulate         
-				double BLX_col=Math.ceil(rand.nextDouble()*1);                 
+				//double BLX_col=Math.ceil(rand.nextDouble()*1);                 
 				//%BLX-a operators         
 				double cmax=Math.max(BLX_temp1,BLX_temp2);         
 				double cmin=Math.min(BLX_temp1,BLX_temp2);                 
@@ -187,13 +202,13 @@ public class GeneticLinReg {
 		    	double num_temp1=chrom.get(((Number)Math.ceil(rand.nextDouble()*numChromosomes*reproduced)).intValue());                 
 				
 				//%choose the column (gene) to manipulate         
-				int num_col=1;
+				//int num_col=1;
 				
 				//%non-uniform mutation operators and stochastic variables         
 				int tau= Math.round(rand.nextFloat());                 
 				
-				double num_y_up = limits[2]-num_temp1;         
-				double num_y_down=num_temp1-limits[2];                 
+				double num_y_up = limits[1]-num_temp1;         
+				double num_y_down=num_temp1-limits[0];                 
 				
 				double num_t_up=num_y_up*(1-Math.pow(rand.nextDouble(),Math.pow((1-generation/numGenerations),num_b)));         
 				double num_t_down=num_y_down*(1-Math.pow(rand.nextDouble(),Math.pow((1-generation/numGenerations),num_b)));                 
@@ -272,19 +287,24 @@ public class GeneticLinReg {
 		return true;
 	}
 	
+	/**
+	 * Calculates the error of a given slope
+	 * @param slope the test slope
+	 * @return the error of the test slope
+	 */
 	private double getError(double slope)
 	{
 		double error = 0;
 		double n = comparePoints.size();
 		for(int i = 0;i < n; i++)
 		{
-			double x = comparePoints.get(i).x;
+//			double x = comparePoints.get(i).x;
+//			double actY = comparePoints.get(i).y;
+//			double predY = slope*Math.pow(x,2);
+
+			double logx = comparePoints.get(i).x;
 			double actY = comparePoints.get(i).y;
-			double predY = slope*Math.pow(x,2);
-			
-//			double logx = Math.log(comparePoints.get(i).x);
-//			double actY = Math.log(comparePoints.get(i).y);
-//			double predY = Math.log(slope) + 2*logx;
+			double predY = Math.log(slope) + 2*logx;
 			
 			double thisError = Math.pow((predY - actY), 2);
 			error = error + thisError;
@@ -293,100 +313,13 @@ public class GeneticLinReg {
 		return error;
 	}
 	
+	/**
+	 * Returns the slope found
+	 * @return the optimum slope found
+	 */
 	public double getSlope()
 	{
 		return slope;
 	}
-	
-	private void shiftPoints()
-	{
-		double minX = comparePoints.get(0).x;
-		double minY = comparePoints.get(0).y;
-		for(int i=1;i < comparePoints.size(); i++)
-		{
-			double tempX = comparePoints.get(i).x;
-			double tempY = comparePoints.get(i).y;
-			
-			if(tempX < minX)
-			{
-				minX = tempX;
-			}
-			if(tempY < minY)
-			{
-				minY = tempY;
-			}
-		}
-		List<Point2D> temp = comparePoints;
-		
-		double addX = 0;
-		double addY = 0;
-		
-		if(minX < 1)
-		{
-			addX = 1-minX;
-		}
-		if(minY < 1)
-		{
-			addY = 1-minY;
-		}
-		for(int i=0;i < temp.size(); i++)
-		{
-			Point2D tempPoint = temp.get(i);
-			tempPoint.x = tempPoint.x + addX;
-			tempPoint.y = tempPoint.y + addY;
-			temp.set(i, tempPoint);
-		}
-		comparePoints = temp;
-	}
-	
-	private double getLS()
-	{
-		double minX = comparePoints.get(0).x;
-		double minY = comparePoints.get(0).y;
-		for(int i=1;i < comparePoints.size(); i++)
-		{
-			double tempX = comparePoints.get(i).x;
-			double tempY = comparePoints.get(i).y;
-			
-			if(tempX < minX)
-			{
-				minX = tempX;
-			}
-			if(tempY < minY)
-			{
-				minY = tempY;
-			}
-		}
-		List<Point2D> temp = comparePoints;
-		
-		double addX = 0;
-		double addY = 0;
-		
-		if(minX < 1)
-		{
-			addX = 1-minX;
-		}
-		if(minY < 1)
-		{
-			addY = 1-minY;
-		}
-		for(int i=0;i < temp.size(); i++)
-		{
-			Point2D tempPoint = temp.get(i);
-			tempPoint.x = tempPoint.x + addX;
-			tempPoint.y = tempPoint.y + addY;
-			temp.set(i, tempPoint);
-		}
-		
-		double sumY = 0;
-		double sumX = 0;
-		
-		for(int i=0;i < temp.size(); i++)
-		{
-			sumY = sumY + Math.log(temp.get(i).y);
-			sumX = sumX + Math.log(temp.get(i).x);
-		}
-		double result = Math.exp((sumY - 2*sumX)/temp.size());
-		return result;
-	}
+
 }
