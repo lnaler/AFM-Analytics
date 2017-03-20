@@ -429,6 +429,16 @@ public class CurveData {
 	{
 		int lastIndex = getClosest(impactZ, 0) + 1;
 		int firstIndex = lastIndex - 4;
+		if(firstIndex < 0)
+		{
+			lastIndex = lastIndex - firstIndex;
+			firstIndex = 0;
+		}
+		if(lastIndex > dataMatrix.numRows)
+		{
+			firstIndex = firstIndex - (lastIndex - dataMatrix.numRows);
+			lastIndex = dataMatrix.numRows;
+		}
 		double currentTotal = 0;
 		for(int i = firstIndex; i < lastIndex; i++)
 		{
@@ -532,7 +542,7 @@ public class CurveData {
 //			{
 //				currentLast = i;
 //			}
-//			i++;
+//			i++; <- here was the bug, it was originally a while loop and I didn't delete this
 //		}
 //		System.out.println("Last NaN at: " + currentLast);
 //		return currentLast;
@@ -542,14 +552,14 @@ public class CurveData {
 		boolean lastFound = false;
 		while(i >= 0 && !lastFound)
 		{
-			if(Double.isNaN(dataMatrix.get(i, column)))
+			if(!Double.isFinite(dataMatrix.get(i, column)))
 			{
 				currentLast = i;
 				lastFound = true;
 			}
 			i--;
 		}
-		System.out.println("Last NaN at: " + currentLast);
+		//System.out.println("Last NaN at: " + currentLast);
 		return currentLast;
 	}
 	
@@ -559,7 +569,10 @@ public class CurveData {
 	 */
 	private XYDataset toWeightedMatrix()
 	{
+		points = new ArrayList<WeightedObservedPoint>();
+		dlPoints = new ArrayList<Point2D>();
 		int start = Math.max(getLastNaN(10), getLastNaN(9));
+		start = Math.max(start, getClosest(impactZ,0));
 		int last = getLimit();
 		if(last <= start) //If the last NaN occurs after the data limit
 		{
@@ -584,7 +597,7 @@ public class CurveData {
         	points.add(point);
         	dlPoints.add(new Point2D(Math.log(xval), Math.log(yval)));
         	data.add(xval, yval);
-        	tempYAvg = tempYAvg + yval;
+        	tempYAvg = tempYAvg + Math.log(yval);
         	System.out.println("i: " + i + ", logx: " + Math.log(xval) + ", logy: " + Math.log(yval));
 		}
 		
@@ -593,11 +606,12 @@ public class CurveData {
 		
 		maxX = data.getMaxX();
 		maxY = data.getMaxY();
-		avgY = tempYAvg/(last-start); //We need this to calculate R
+		avgY = tempYAvg/(last-start-1); //We need this to calculate R
 		
 		double[] trends = Manager.fitMatrix(dlPoints, numIterations);
 		slope = trends[0];
 		exponent = trends[1];
+		R2 = getRSquared();
 		XYSeries powTrend = new XYSeries("power");
 		for(int i=start+1;i < last;i++)//Generate our trend data
 		{
@@ -608,6 +622,7 @@ public class CurveData {
 		final XYSeriesCollection dataset = new XYSeriesCollection();          
 	    dataset.addSeries(data);
 	    dataset.addSeries(powTrend);
+	    System.out.println(dataMatrix.toString());
 	    return dataset;
 	}
 	
@@ -663,7 +678,6 @@ public class CurveData {
 	 */
 	public double[] getResults()
 	{
-		R2 = getRSquared();
 		double[] results = {slope, exponent, R2, calcYoungs(slope)};
 		return results;
 	}
@@ -688,16 +702,31 @@ public class CurveData {
 	 */
 	private double getRSquared()
 	{
+//		ArrayList<WeightedObservedPoint> xpoints = new ArrayList<>();
+//		double tempAvg = 0;
+//		for(int i=1;i < 21; i++)
+//		{
+//			xpoints.add(new WeightedObservedPoint(1, i, 15*i*i));
+//			tempAvg = tempAvg + Math.log(15*i*i);
+//		}
+		//tempAvg = tempAvg/20;
+		//double tempSlope = 14.5;
 		double predY;
 		double SSE = 0;
 		double SSTO = 0;
-		for(WeightedObservedPoint point:points)
+		for(int i=0;i < points.size(); i++)
 		{
-			predY = slope*Math.pow(point.getX(), exponent);
-			SSE = SSE + Math.pow((point.getY() - predY), 2);
-			SSTO = SSTO + Math.pow((point.getY() - avgY), 2);
+			WeightedObservedPoint point = points.get(i);
+			predY = Math.log(slope) + exponent*Math.log(point.getX());
+			SSE = SSE + Math.pow((Math.log(point.getY()) - predY), 2);
+			SSTO = SSTO + Math.pow((Math.log(point.getY()) - avgY), 2);
+//			System.out.println("Spacer");
+//			WeightedObservedPoint point = xpoints.get(i);
+//			predY = Math.log(tempSlope) + exponent*Math.log(point.getX());
+//			SSE = SSE + Math.pow((Math.log(point.getY()) - predY), 2);
+//			SSTO = SSTO + Math.pow((Math.log(point.getY()) - tempAvg), 2);
 		}
-		//System.out.println("SSE: " + SSE + ", SSTO: " + SSTO);
+		System.out.println("SSE: " + SSE + ", SSTO: " + SSTO);
 		double result = (1.0-(SSE/SSTO));
 		if(result < 0)
 		{

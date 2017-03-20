@@ -8,6 +8,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Rectangle2D;
@@ -252,20 +254,27 @@ public class AfmDisplay{
 		btnRun.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent arg0) {
-				//boolean isReady = inputsChecked();
-//				if(isReady)
-//				{
 				double[] inputs = getInputs();
 				manager.setParameters(inputs, limitZ);
 				chartPanel.setChart(manager.run(goodFit));
 				updateResults(manager.getResults());
 				btnClearChart.setEnabled(true);
-//				if(!isReady)
-//				{
-//					infoBox("All variables must be numeric", "ERROR");
-//				}
 			}
 		});
+//		btnRun.addActionListener(new ActionListener() {
+//            @Override
+//            public void actionPerformed(ActionEvent e) {
+//            	if(btnRun.isEnabled())
+//            	{
+//	            	double[] inputs = getInputs();
+//					manager.setParameters(inputs, limitZ);
+//					chartPanel.setChart(manager.run(goodFit));
+//					updateResults(manager.getResults());
+//					btnClearChart.setEnabled(true);
+//            	}
+//            }
+//
+//        });
 		
 		//This is where we keep our files, and keep track of which one(s) are selected
 		listModel = new DefaultListModel<String>();
@@ -409,7 +418,7 @@ public class AfmDisplay{
 		txtSlope.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 18));
 		txtSlope.setBorder(BorderFactory.createEmptyBorder());
 		txtSlope.setText("Slope: ");
-		frmAfmanalytics.getContentPane().add(txtSlope, "cell 3 14 2 1,growx");
+		frmAfmanalytics.getContentPane().add(txtSlope, "cell 3 14 3 1,growx");
 		txtSlope.setColumns(10);
 		
 		//Results field for exponent.
@@ -419,7 +428,7 @@ public class AfmDisplay{
 		txtExp.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 18));
 		txtExp.setText("Exp:");
 		txtExp.setBorder(BorderFactory.createEmptyBorder());
-		frmAfmanalytics.getContentPane().add(txtExp, "cell 5 14 2 1,growx");
+		frmAfmanalytics.getContentPane().add(txtExp, "cell 6 14,growx");
 		txtExp.setColumns(10);
 		
 		JScrollPane scrollPane = new JScrollPane(fileList);
@@ -518,12 +527,42 @@ public class AfmDisplay{
 					}
 				}
 			}
-		
 		});
 		
-				JLabel lblnm_1 = new JLabel("(nm)");
-				lblnm_1.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 16));
-				frmAfmanalytics.getContentPane().add(lblnm_1, "cell 2 16,alignx left");
+//		impactZField.addKeyListener(new KeyListener(){
+//
+//			@Override
+//			public void keyPressed(KeyEvent e) {
+//				if(e.getKeyCode() == KeyEvent.VK_ENTER)
+//				{
+//					if(btnRun.isEnabled())
+//					{
+//						double[] inputs = getInputs();
+//						manager.setParameters(inputs, limitZ);
+//						chartPanel.setChart(manager.run(goodFit));
+//						updateResults(manager.getResults());
+//						btnClearChart.setEnabled(true);
+//					}
+//				}
+//				
+//			}
+//
+//			@Override
+//			public void keyReleased(KeyEvent arg0) {
+//				//do nothing
+//				
+//			}
+//
+//			@Override
+//			public void keyTyped(KeyEvent arg0) {
+//				//do nothing
+//			}
+//			
+//		});
+		
+		JLabel lblnm_1 = new JLabel("(nm)");
+		lblnm_1.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 16));
+		frmAfmanalytics.getContentPane().add(lblnm_1, "cell 2 16,alignx left");
 		
 		//Result field for Young's Modulus
 		txtYoungsModulus = new JTextField();
@@ -807,6 +846,8 @@ public class AfmDisplay{
 		mnHelp.setEnabled(false);
 		menuBar.add(mnHelp);
 		
+		frmAfmanalytics.getRootPane().setDefaultButton(btnRun);
+		
 	}
 	
 	/**
@@ -879,7 +920,7 @@ public class AfmDisplay{
 	private void updateResults(double[] results)
     {	
     	txtSlope.setText(String.format("Slope: %,.1f", results[0]));
-    	txtExp.setText(String.format("Exp: %.3f", results[1]));
+    	txtExp.setText(String.format("Exp: %.0f", results[1]));
     	txtRsquared.setText(String.format("R-Squared: %.3f", results[2]));
     	txtYoungsModulus.setText(String.format("Young's Modulus: %,.3f"+"kPa", results[3]));
     }

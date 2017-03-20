@@ -126,7 +126,7 @@ public class Manager {
 		initMatrix();
 		calcMatrix(); // perform calculations
 		Manager.calcFit = goodFit;
-		//allData.get(currentData).getXYChart(); //get chart
+		//allData.get(currentData).generateXYChart(); //get chart
 		return allData.get(currentData).getXYChart();
 	}
 	

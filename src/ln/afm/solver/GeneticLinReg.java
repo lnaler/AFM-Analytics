@@ -61,7 +61,7 @@ public class GeneticLinReg {
 		double limits[] = new double[3];
 		Random rand = new Random();
 		limits[0]= 0;    //lower limits for each gene 
-		limits[1]= 5000;    //upper limits for each gene ~1113kPa
+		limits[1]= 50000;    //upper limits for each gene ~1113kPa
 		limits[2]=limits[1]-limits[0];
 		
 		//inititate chromosomes 
