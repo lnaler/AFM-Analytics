@@ -76,6 +76,8 @@ import javax.swing.SwingConstants;
 import javax.swing.JSplitPane;
 import javax.swing.JList;
 import javax.swing.ScrollPaneConstants;
+import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JRadioButtonMenuItem;
 
 /**
  * GUI for AFM-Analytics program
@@ -95,10 +97,15 @@ public class AfmDisplay{
 	private double zLimit;
 	private double gelThickness;
 	
+	private String movingAveragePoints = "0";
+	private String sigma = "0";
+	
 	//private File[] dataFiles;
 	private File dataDirectory;
 	private boolean directorySet = false;
 	private boolean goodFit = true;
+	private boolean smoothGraph = false;
+	private int smoothGraphInt = Manager.NO_SMOOTHING;
 	private Manager manager = new Manager();
 	private DefaultListModel<String> listModel;
 	JList<String> fileList;
@@ -118,6 +125,8 @@ public class AfmDisplay{
 	@SuppressWarnings("unused")
 	private JTextArea log;
 	private ChartPanel chartPanel;
+	
+	
 	
 	/**
 	 * Launch the application.
@@ -216,6 +225,8 @@ public class AfmDisplay{
 			@Override
 			public void mouseClicked(MouseEvent arg0) {
 				manager.setCurrentFile(fileList.getSelectedIndex());
+				//manager.setSmoothGraph(smoothGraph);
+				manager.setSmoothGraphInt(smoothGraphInt);
 				JFreeChart chart = manager.viewRawGraph();
 				chartPanel.setChart(new JFreeChart(new XYPlot()));
 				if(manager.hasRun())
@@ -791,13 +802,35 @@ public class AfmDisplay{
 		mntmPreferences.setFont(new Font("Segoe UI", Font.PLAIN, 20));
 		mnEdit.add(mntmPreferences);
 		
-		JMenu mnGraphFit = new JMenu("Graph Fit");
+		JMenu mnGraphFit = new JMenu("Graph Options");
 		mnGraphFit.setFont(new Font("Segoe UI", Font.PLAIN, 18));
 		menuBar.add(mnGraphFit);
 		
+		JMenu mnFittingOptions = new JMenu("Fitting");
+		mnFittingOptions.setFont(new Font("Tahoma", Font.PLAIN, 18));
+		mnGraphFit.add(mnFittingOptions);
+		
+		
+		JRadioButton rdbtnForceFit = new JRadioButton("Genetic Algorithm");
+		mnFittingOptions.add(rdbtnForceFit);
+		rdbtnForceFit.setFont(new Font("Tahoma", Font.PLAIN, 18));
+		rdbtnForceFit.addItemListener(new ItemListener() {
+			public void itemStateChanged(ItemEvent e) {
+				if(e.getStateChange() == ItemEvent.SELECTED)
+				{
+					goodFit = false;
+				}
+				if(e.getStateChange() == ItemEvent.DESELECTED)
+				{
+					goodFit = true;
+				}
+			}
+		});
+		fitRadButtons.add(rdbtnForceFit);
+		
 		JRadioButton rdbtnGoodFit = new JRadioButton("Levenberg-Marquadt");
-		mnGraphFit.add(rdbtnGoodFit);
-		rdbtnGoodFit.setHorizontalAlignment(SwingConstants.CENTER);
+		mnFittingOptions.add(rdbtnGoodFit);
+		rdbtnGoodFit.setHorizontalAlignment(SwingConstants.RIGHT);
 		rdbtnGoodFit.setFont(new Font("Tahoma", Font.PLAIN, 18));
 		rdbtnGoodFit.setSelected(true);
 		rdbtnGoodFit.addItemListener(new ItemListener() {
@@ -814,23 +847,127 @@ public class AfmDisplay{
 		});
 		fitRadButtons.add(rdbtnGoodFit);
 		
+		JMenu mnMovingAverage = new JMenu("Smoothing");
+		mnMovingAverage.setFont(new Font("Tahoma", Font.PLAIN, 18));
+		mnGraphFit.add(mnMovingAverage);
 		
-		JRadioButton rdbtnForceFit = new JRadioButton("Genetic Algorithm");
-		mnGraphFit.add(rdbtnForceFit);
-		rdbtnForceFit.setFont(new Font("Tahoma", Font.PLAIN, 18));
-		rdbtnForceFit.addItemListener(new ItemListener() {
+		JCheckBoxMenuItem chckbxmntmMovingAverage = new JCheckBoxMenuItem("Moving Average");
+		chckbxmntmMovingAverage.addItemListener(new ItemListener() {
 			public void itemStateChanged(ItemEvent e) {
+				//If we do want to limit it, enable relevant fields
 				if(e.getStateChange() == ItemEvent.SELECTED)
 				{
-					goodFit = false;
+					smoothGraph = true;
 				}
 				if(e.getStateChange() == ItemEvent.DESELECTED)
 				{
-					goodFit = true;
+					smoothGraph = false;
 				}
 			}
 		});
-		fitRadButtons.add(rdbtnForceFit);
+		
+		ButtonGroup smoothRadButtons = new ButtonGroup();
+		JRadioButtonMenuItem rdbtnmntmNoSmoothing = new JRadioButtonMenuItem("No Smoothing");
+		rdbtnmntmNoSmoothing.setSelected(true);
+		rdbtnmntmNoSmoothing.setFont(new Font("Tahoma", Font.PLAIN, 18));
+		mnMovingAverage.add(rdbtnmntmNoSmoothing);
+		smoothRadButtons.add(rdbtnmntmNoSmoothing);
+		rdbtnmntmNoSmoothing.addItemListener(new ItemListener() {
+			public void itemStateChanged(ItemEvent e) {
+				//If we do want to limit it, enable relevant fields
+				if(e.getStateChange() == ItemEvent.SELECTED)
+				{
+					smoothGraphInt = Manager.NO_SMOOTHING;
+				}
+			}
+		});
+		
+		JRadioButtonMenuItem rdbtnmntmMovingAverage = new JRadioButtonMenuItem("Moving Average");
+		rdbtnmntmMovingAverage.setFont(new Font("Tahoma", Font.PLAIN, 18));
+		mnMovingAverage.add(rdbtnmntmMovingAverage);
+		smoothRadButtons.add(rdbtnmntmMovingAverage);
+		rdbtnmntmMovingAverage.addItemListener(new ItemListener() {
+			public void itemStateChanged(ItemEvent e) {
+				//If we do want to limit it, enable relevant fields
+				if(e.getStateChange() == ItemEvent.SELECTED)
+				{
+					smoothGraphInt = Manager.MOVING_AVG;
+				}
+			}
+		});
+		
+		JRadioButtonMenuItem rdbtnmntmGaussian = new JRadioButtonMenuItem("Gaussian");
+		rdbtnmntmGaussian.setFont(new Font("Tahoma", Font.PLAIN, 18));
+		mnMovingAverage.add(rdbtnmntmGaussian);
+		smoothRadButtons.add(rdbtnmntmGaussian);
+		rdbtnmntmGaussian.addItemListener(new ItemListener() {
+			public void itemStateChanged(ItemEvent e) {
+				//If we do want to limit it, enable relevant fields
+				if(e.getStateChange() == ItemEvent.SELECTED)
+				{
+					smoothGraphInt = Manager.GAUSSIAN;
+				}
+			}
+		});
+		
+		chckbxmntmMovingAverage.setHorizontalAlignment(SwingConstants.LEFT);
+		chckbxmntmMovingAverage.setFont(new Font("Tahoma", Font.PLAIN, 18));
+		mnMovingAverage.add(chckbxmntmMovingAverage);
+		
+		JMenuItem mntmSettings = new JMenuItem("Settings");
+		mntmSettings.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent ev) {
+				JTextField numPointsField = new JTextField(5);
+				JTextField sigmaField = new JTextField(5);
+				
+				numPointsField.setText(movingAveragePoints);
+				sigmaField.setText(sigma);
+				JPanel pointsPanel = new JPanel();
+				pointsPanel.setLayout(new BoxLayout(pointsPanel, BoxLayout.Y_AXIS));
+					
+				JPanel pointsPanel1 = new JPanel();
+				pointsPanel1.setLayout(new BoxLayout(pointsPanel1, BoxLayout.LINE_AXIS));
+				pointsPanel1.add(Box.createHorizontalStrut(15));
+				pointsPanel1.add(new JLabel("Radius: "));
+				pointsPanel1.add(Box.createHorizontalStrut(34));
+				pointsPanel1.add(numPointsField);
+				pointsPanel1.add(Box.createHorizontalStrut(36));
+				
+				JPanel pointsPanel2 = new JPanel();
+				pointsPanel2.setLayout(new BoxLayout(pointsPanel2, BoxLayout.LINE_AXIS));
+				pointsPanel2.add(Box.createHorizontalStrut(15));
+				pointsPanel2.add(new JLabel("Sigma: "));
+				pointsPanel2.add(Box.createHorizontalStrut(34));
+				pointsPanel2.add(sigmaField);
+				pointsPanel2.add(Box.createHorizontalStrut(36));
+				
+				pointsPanel.add(pointsPanel1);
+				pointsPanel.add(pointsPanel2);
+				
+				int result = JOptionPane.showConfirmDialog(null, pointsPanel, 
+						"Moving Average", JOptionPane.OK_CANCEL_OPTION);
+
+				if (result == JOptionPane.OK_OPTION) {
+					System.out.println("Num Averaged Points: " + numPointsField.getText());
+					movingAveragePoints = numPointsField.getText();
+					sigma = sigmaField.getText();
+					//TODO Auto-update the graph
+//					if(smoothGraph)
+//					{
+//						//Tell the manager about the number of points
+//						//If data is being viewed, update it
+//					}
+					manager.setMovingAverage(numPointsField.getText(), sigmaField.getText());
+				}
+			}
+		});
+		mntmPreferences.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent ev) {
+				
+			}
+		});
+		mntmSettings.setFont(new Font("Tahoma", Font.PLAIN, 18));
+		mnMovingAverage.add(mntmSettings);
 		
 		JMenu mnView = new JMenu("View");
 		mnView.setFont(new Font("Segoe UI", Font.PLAIN, 18));

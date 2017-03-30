@@ -51,6 +51,8 @@ public class CurveData {
 	private double youngs;
 	
 	private boolean hasRun;
+	private boolean smoothGraph;
+	private int numPoints;
 	private int numIterations;
 	
 	private List<Double> zdistValues = new ArrayList<Double>();
@@ -60,6 +62,7 @@ public class CurveData {
 	
 	ArrayList<WeightedObservedPoint> points;
 	List<Point2D> dlPoints;
+	List<Point2D> smoothedPoints;
 	
 	JFreeChart rawData;
 	JFreeChart forceData;
@@ -70,6 +73,8 @@ public class CurveData {
 	 * 					6.del(nm)	7.del(m)	8.F(N)		9.ln(del)		10.ln(F)
 	 */
 	private DenseMatrix64F dataMatrix;
+	private double sigma;
+	private int smoothInt;
 	
 	/**
 	 * Constructer for CurveData
@@ -78,7 +83,9 @@ public class CurveData {
 	public CurveData(){
 		points = new ArrayList<WeightedObservedPoint>();
 		dlPoints = new ArrayList<Point2D>();
+		smoothedPoints = new ArrayList<Point2D>();
 		hasRun = false;
+		smoothGraph = false;
 		
 		minX = 0;
 		minY = 0;
@@ -309,19 +316,110 @@ public class CurveData {
 		return true; //TODO An instance that returns false?
 	}
 	
+	private XYSeries getMovingAvgPoints()
+	{
+		XYSeries smoothedData = new XYSeries("smoothed");
+		double currentSum = 0;
+		for(int i=0;i < (zdistValues.size()-((numPoints+1)/2));i++)
+		{
+			currentSum = currentSum + voltValues.get(i);
+			if(i > (numPoints-1))
+			{
+				currentSum = currentSum - voltValues.get(i-numPoints);
+			}
+			if(i >= (numPoints-1))
+			{
+				smoothedData.add(Double.valueOf(zdistValues.get(i)), Double.valueOf(currentSum/numPoints));
+				smoothedPoints.add(new Point2D(zdistValues.get(i).doubleValue(), currentSum/numPoints));
+			}
+		}
+		return smoothedData;
+	}
+	
+	private double gaussianDist(double x, double sigma, int center)
+	{
+		double partA = 1.0/Math.sqrt(2*Math.PI*sigma);
+		double partB = Math.exp(-(Math.pow((x-center), 2))/(2*Math.pow(sigma, 2)));
+		return partA*partB;
+	}
+	
+	private double[] getGaussianKernel(int radius, double sigma)
+	{
+		double[] gaussianKernel = new double[2*radius+1];
+		double gaussianSum = 0;
+		for(int i=0;i < (2*radius+1);i++)
+		{	
+			//Performing Simpson's Integration to get discrete values
+			gaussianKernel[i] = (1.0/6.0)*(gaussianDist(i-0.5, sigma, radius)+gaussianDist(i+0.5,sigma,radius)+4*(gaussianDist(i,sigma,radius)));
+			gaussianSum = gaussianSum + gaussianKernel[i];
+		}
+		//Need to scale to 1.0
+		for(int i=0;i < (2*radius+1);i++)
+		{	
+			//Performing Simpson's Integration to get discrete values
+			gaussianKernel[i] = gaussianKernel[i]/gaussianSum;
+			//System.out.println(i + ": " + gaussianKernel[i]);
+		}
+		return gaussianKernel;
+	}
+	
+	private XYSeries getGaussianKernelPoints()
+	{
+		int radius = numPoints;
+		//double sigma = numPoints/3.0;
+		XYSeries smoothedData = new XYSeries("smoothed");
+		double[] gaussianKernel = getGaussianKernel(radius, sigma);
+		double currentSum = 0;
+		for(int i=radius; i < (zdistValues.size()-radius-1);i++)
+		{
+			currentSum = 0;
+			for(int j=0;j < gaussianKernel.length;j++)
+			{
+				//double temp = gaussianKernel[j]*voltValues.get(i-radius);
+				currentSum = currentSum + gaussianKernel[j]*voltValues.get(i-radius+j);
+			}
+			smoothedData.add(Double.valueOf(zdistValues.get(i)), Double.valueOf(currentSum));
+			smoothedPoints.add(new Point2D(zdistValues.get(i).doubleValue(), currentSum));
+			//System.out.println("Old: x-" + zdistValues.get(i) + ", y-" + voltValues.get(i)
+			//+ " New: y-" + currentSum);
+		}
+		return smoothedData;
+	}
+	
+//	private XYSeries getSmoothedPoints()
+//	{
+//		//return getMovingAvgPoints();
+//		return getGaussianKernelPoints();
+//	}
+	
+	private XYSeries getSmoothedPoints()
+	{
+		if(smoothInt == Manager.GAUSSIAN)
+		{
+			return getGaussianKernelPoints();
+		}
+		return getMovingAvgPoints();
+	}
+	
 	/**
 	 * Creates a XYDataset of the data
 	 * @return XYDataset of the data
 	 */
 	private XYDataset getXYData()
 	{
-		XYSeries data = new XYSeries("test");
+		XYSeries data = new XYSeries("Raw");
 		for(int i=0;i < zdistValues.size();i++)
 		{
 			data.add(zdistValues.get(i), voltValues.get(i));
 		}
-		final XYSeriesCollection dataset = new XYSeriesCollection();          
+		final XYSeriesCollection dataset = new XYSeriesCollection();
+		
+		if(smoothInt != Manager.NO_SMOOTHING)
+	    {
+	    	dataset.addSeries(getSmoothedPoints());
+	    }
 	    dataset.addSeries(data);
+	    
 	    return dataset;
 	}
 	
@@ -381,16 +479,31 @@ public class CurveData {
 	 */
 	public void initMatrix()
 	{
-		//userLog.append("Initializing matrix..." + "\n");
-		double[][] curveArray = toArray();
-		int numCols = 11;
-		int numRows = curveArray[0].length;
-		dataMatrix = new DenseMatrix64F(numRows, numCols);
-		for(int i=0;i<2;i++)
+		if(!smoothGraph)
 		{
+			//userLog.append("Initializing matrix..." + "\n");
+			double[][] curveArray = toArray();
+			int numCols = 11;
+			int numRows = curveArray[0].length;
+			dataMatrix = new DenseMatrix64F(numRows, numCols);
+			for(int i=0;i<2;i++)
+			{
+				for(int j=0;j<numRows;j++)
+				{
+					dataMatrix.set(j, i, curveArray[i][j]);
+				}
+			}
+		}
+		if(smoothGraph)
+		{
+			int numCols = 11;
+			int numRows = smoothedPoints.size();
+			dataMatrix = new DenseMatrix64F(numRows, numCols);
 			for(int j=0;j<numRows;j++)
 			{
-				dataMatrix.set(j, i, curveArray[i][j]);
+				Point2D current = smoothedPoints.get(j);
+				dataMatrix.set(j, 0, current.x);
+				dataMatrix.set(j, 1, current.y);
 			}
 		}
 	}
@@ -828,5 +941,23 @@ public class CurveData {
 	 */
 	public void setNumIterations(int numIterations) {
 		this.numIterations = numIterations;
+	}
+
+	public void setSmoothFit(boolean smoothFit) {
+		this.smoothGraph = smoothFit;
+	}
+
+	public void setNumPoints(int movingAveragePoints) {
+		this.numPoints = movingAveragePoints;
+	}
+
+	public void setSigma(double sigma) {
+		this.sigma = sigma;
+		
+	}
+
+	public void setSmoothInt(int smoothFit) {
+		// TODO Auto-generated method stub
+		this.smoothInt = smoothFit;
 	}
 }

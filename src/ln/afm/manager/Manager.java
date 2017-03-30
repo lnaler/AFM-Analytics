@@ -27,8 +27,10 @@ public class Manager {
 	List<File> allFiles = new ArrayList<File>();
 	List<CurveData> allData = new ArrayList<CurveData>();
 	private int numParsed;
-	
 	private int currentData;
+	private int movingAveragePoints = 0; //TODO separate this out more
+	private double sigma = 0;
+	
 	
 	//Where our config file is and how many parameters
 	static String configFile = "afm-local.config";
@@ -37,6 +39,11 @@ public class Manager {
 	//Export as JPEG or PNG
 	public static final int JPEG = 0;
 	public static final int PNG = 1;
+	
+	//Smoothing Type
+	public static final int NO_SMOOTHING = 0;
+	public static final int MOVING_AVG = 1;
+	public static final int GAUSSIAN = 2;
 	
 	//Levenberg Marquadt Algorithm?
 	private static boolean calcFit = true;
@@ -447,5 +454,33 @@ public class Manager {
 	public boolean calcFit()
 	{
 		return calcFit;
+	}
+	
+	public void setMovingAverage(String input, String sigma_input)
+	{
+		movingAveragePoints = 0;
+		sigma = 0;
+		if(FileParser.isDouble(input))
+		{
+			movingAveragePoints = Integer.parseInt(input);
+		}
+		if(FileParser.isDouble(sigma_input))
+		{
+			sigma = Integer.parseInt(sigma_input);
+		}
+	}
+	
+	public void setSmoothGraph(boolean smoothFit)
+	{
+		allData.get(currentData).setSmoothFit(smoothFit);
+		allData.get(currentData).setNumPoints(movingAveragePoints);
+		allData.get(currentData).setSigma(sigma);
+	}
+	
+	public void setSmoothGraphInt(int smoothFit)
+	{
+		allData.get(currentData).setSmoothInt(smoothFit);
+		allData.get(currentData).setNumPoints(movingAveragePoints);
+		allData.get(currentData).setSigma(sigma);
 	}
 }
