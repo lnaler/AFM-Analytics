@@ -48,7 +48,7 @@ public class DoglegLSLM {
 		// iterate 500 times or until it converges.
 		// Manually iteration is possible too if more control over is required
 		UtilOptimize.process(optimizer, iterations); //TODO give access to this
-		System.out.println("Num iterations: " + iterations);
+		//System.out.println("Num iterations: " + iterations);
 		double found[] = optimizer.getParameters();
 
 		if(Double.isNaN(optimizer.getFunctionValue()))

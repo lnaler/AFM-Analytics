@@ -13,6 +13,7 @@ import ln.afm.model.CurveData;
 import ln.afm.model.FileParser;
 import ln.afm.model.SaveFile;
 import ln.afm.solver.DoglegLSLM;
+import ln.afm.solver.GeneticIndentFinder;
 import ln.afm.solver.GeneticLinReg;
 import ln.afm.solver.Point2D;
 
@@ -104,7 +105,7 @@ public class Manager {
 			double coeffs[] = {0, 2.0}; //right now we're forcing it to ax^2
 			DoglegLSLM dlSolver = new DoglegLSLM();
 			coeffs[0] = dlSolver.getFit(dlPoints, iterations);
-	        System.out.print("Curve Slope: " + coeffs[0] + " Exp: " + coeffs[1] + "\n");
+	        //System.out.print("Curve Slope: " + coeffs[0] + " Exp: " + coeffs[1] + "\n");
 	        results[0] = coeffs[0];
 	        results[1] = coeffs[1];
 	        //return results;
@@ -482,5 +483,28 @@ public class Manager {
 		allData.get(currentData).setSmoothInt(smoothFit);
 		allData.get(currentData).setNumPoints(movingAveragePoints);
 		allData.get(currentData).setSigma(sigma);
+	}
+	
+	public double getImpact(boolean goodFit)
+	{
+		GeneticIndentFinder gif = new GeneticIndentFinder(100, allData.get(currentData));
+		gif.run();
+		return gif.getIndent();
+	}
+	
+	/**
+	 * Runs the analyst and returns the processed data chart with trend lines
+	 * @return Force-Indentation chart with Power trend line
+	 */
+	public JFreeChart autoRun(boolean goodFit)
+	{
+		System.out.print("Running Automatically..." + "\n");
+		allData.get(currentData).setImpactZ(getImpact(goodFit));
+		initMatrix();
+		calcMatrix(); // perform calculations
+		Manager.calcFit = goodFit;
+		//allData.get(currentData).generateXYChart(); //get chart
+		
+		return allData.get(currentData).getXYChart();
 	}
 }

@@ -105,6 +105,7 @@ public class AfmDisplay{
 	private boolean directorySet = false;
 	private boolean goodFit = true;
 	private boolean smoothGraph = false;
+	private boolean automated = false;
 	private int smoothGraphInt = Manager.NO_SMOOTHING;
 	private Manager manager = new Manager();
 	private DefaultListModel<String> listModel;
@@ -268,8 +269,14 @@ public class AfmDisplay{
 				double[] inputs = getInputs();
 				manager.setParameters(inputs, limitZ);
 				chartPanel.setChart(manager.run(goodFit));
+				if(automated)
+				{
+					System.out.println("Automated!");
+					chartPanel.setChart(manager.autoRun(goodFit));
+				}
 				updateResults(manager.getResults());
 				btnClearChart.setEnabled(true);
+				
 			}
 		});
 //		btnRun.addActionListener(new ActionListener() {
@@ -497,10 +504,26 @@ public class AfmDisplay{
 		
 		//Do we want to automatically run without Z0 input? No. Not yet.
 		chckbxSelectZ = new JCheckBox("     Select Z0");
-		chckbxSelectZ.setEnabled(false);
 		chckbxSelectZ.setSelected(true);
 		chckbxSelectZ.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 18));
 		frmAfmanalytics.getContentPane().add(chckbxSelectZ, "cell 0 16,alignx right");
+		chckbxSelectZ.addItemListener(new ItemListener() {
+			public void itemStateChanged(ItemEvent e) {
+				//If we do want to limit it, enable relevant fields
+				if(e.getStateChange() == ItemEvent.DESELECTED)
+				{
+					automated = true;
+					impactZField.setEditable(false);
+				}
+				
+				//If we do want to limit it, enable relevant fields
+				if(e.getStateChange() == ItemEvent.SELECTED)
+				{
+					automated = false;
+					impactZField.setEditable(true);
+				}
+			}
+		});
 		
 		//Formatted field associated with ImpactZ
 		impactZField.setValue(new Double(0));
@@ -851,20 +874,23 @@ public class AfmDisplay{
 		mnMovingAverage.setFont(new Font("Tahoma", Font.PLAIN, 18));
 		mnGraphFit.add(mnMovingAverage);
 		
-		JCheckBoxMenuItem chckbxmntmMovingAverage = new JCheckBoxMenuItem("Moving Average");
-		chckbxmntmMovingAverage.addItemListener(new ItemListener() {
-			public void itemStateChanged(ItemEvent e) {
-				//If we do want to limit it, enable relevant fields
-				if(e.getStateChange() == ItemEvent.SELECTED)
-				{
-					smoothGraph = true;
-				}
-				if(e.getStateChange() == ItemEvent.DESELECTED)
-				{
-					smoothGraph = false;
-				}
-			}
-		});
+//		JCheckBoxMenuItem chckbxmntmMovingAverage = new JCheckBoxMenuItem("Moving Average");
+//		chckbxmntmMovingAverage.addItemListener(new ItemListener() {
+//			public void itemStateChanged(ItemEvent e) {
+//				//If we do want to limit it, enable relevant fields
+//				if(e.getStateChange() == ItemEvent.SELECTED)
+//				{
+//					smoothGraph = true;
+//				}
+//				if(e.getStateChange() == ItemEvent.DESELECTED)
+//				{
+//					smoothGraph = false;
+//				}
+//			}
+//		});
+//		chckbxmntmMovingAverage.setHorizontalAlignment(SwingConstants.LEFT);
+//		chckbxmntmMovingAverage.setFont(new Font("Tahoma", Font.PLAIN, 18));
+//		mnMovingAverage.add(chckbxmntmMovingAverage);
 		
 		ButtonGroup smoothRadButtons = new ButtonGroup();
 		JRadioButtonMenuItem rdbtnmntmNoSmoothing = new JRadioButtonMenuItem("No Smoothing");
@@ -909,10 +935,6 @@ public class AfmDisplay{
 				}
 			}
 		});
-		
-		chckbxmntmMovingAverage.setHorizontalAlignment(SwingConstants.LEFT);
-		chckbxmntmMovingAverage.setFont(new Font("Tahoma", Font.PLAIN, 18));
-		mnMovingAverage.add(chckbxmntmMovingAverage);
 		
 		JMenuItem mntmSettings = new JMenuItem("Settings");
 		mntmSettings.addActionListener(new ActionListener() {

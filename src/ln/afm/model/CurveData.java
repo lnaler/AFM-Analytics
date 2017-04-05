@@ -394,6 +394,7 @@ public class CurveData {
 	
 	private XYSeries getSmoothedPoints()
 	{
+		smoothedPoints = new ArrayList<Point2D>();
 		if(smoothInt == Manager.GAUSSIAN)
 		{
 			return getGaussianKernelPoints();
@@ -479,7 +480,7 @@ public class CurveData {
 	 */
 	public void initMatrix()
 	{
-		if(!smoothGraph)
+		if(smoothInt == Manager.NO_SMOOTHING)
 		{
 			//userLog.append("Initializing matrix..." + "\n");
 			double[][] curveArray = toArray();
@@ -494,7 +495,7 @@ public class CurveData {
 				}
 			}
 		}
-		if(smoothGraph)
+		if(smoothInt != Manager.NO_SMOOTHING)
 		{
 			int numCols = 11;
 			int numRows = smoothedPoints.size();
@@ -680,7 +681,7 @@ public class CurveData {
 	 * Puts the data together and fits the matrix
 	 * @return XYDataset of processed data and power trend line
 	 */
-	private XYDataset toWeightedMatrix()
+	private XYDataset toWeightedMatrix(boolean suppressErrors)
 	{
 		points = new ArrayList<WeightedObservedPoint>();
 		dlPoints = new ArrayList<Point2D>();
@@ -694,7 +695,10 @@ public class CurveData {
 		}
 		if(start == (dataMatrix.numRows - 1))
 		{
-			AfmDisplay.infoBox("All ln(F) are NaN", "ERROR");
+			if(!suppressErrors)
+			{
+				AfmDisplay.infoBox("All ln(F) are NaN", "ERROR");
+			}
 			return new XYSeriesCollection();
 		}
 		double weight = 1;
@@ -711,7 +715,7 @@ public class CurveData {
         	dlPoints.add(new Point2D(Math.log(xval), Math.log(yval)));
         	data.add(xval, yval);
         	tempYAvg = tempYAvg + Math.log(yval);
-        	System.out.println("i: " + i + ", logx: " + Math.log(xval) + ", logy: " + Math.log(yval));
+        	//System.out.println("i: " + i + ", logx: " + Math.log(xval) + ", logy: " + Math.log(yval));
 		}
 		
 		minX = data.getMinX();
@@ -735,7 +739,7 @@ public class CurveData {
 		final XYSeriesCollection dataset = new XYSeriesCollection();          
 	    dataset.addSeries(data);
 	    dataset.addSeries(powTrend);
-	    System.out.println(dataMatrix.toString());
+	    //System.out.println(dataMatrix.toString());
 	    return dataset;
 	}
 	
@@ -762,7 +766,7 @@ public class CurveData {
 		         "",
 		         xtitle,
 		         ytitle,
-		         toWeightedMatrix(), //this is our data
+		         toWeightedMatrix(false), //this is our data
 		         PlotOrientation.VERTICAL ,
 		         true, //include legend
 		         true,
@@ -839,7 +843,7 @@ public class CurveData {
 //			SSE = SSE + Math.pow((Math.log(point.getY()) - predY), 2);
 //			SSTO = SSTO + Math.pow((Math.log(point.getY()) - tempAvg), 2);
 		}
-		System.out.println("SSE: " + SSE + ", SSTO: " + SSTO);
+		//System.out.println("SSE: " + SSE + ", SSTO: " + SSTO);
 		double result = (1.0-(SSE/SSTO));
 		if(result < 0)
 		{
@@ -959,5 +963,23 @@ public class CurveData {
 	public void setSmoothInt(int smoothFit) {
 		// TODO Auto-generated method stub
 		this.smoothInt = smoothFit;
+	}
+	
+	public double fitAndGetSlope()
+	{
+		toWeightedMatrix(true);
+		return slope;
+	}
+	
+	public double[] getXBounds()
+	{
+		double[] bounds = new double[2];
+		//bounds[0] = minX;
+		//bounds[1] = maxX;
+		bounds[0] = zdistValues.get(0);
+		bounds[1] = zdistValues.get(zdistValues.size()-1);
+		bounds[1] = bounds[1] - 0.10*(bounds[1]-bounds[0]); //TODO Change this
+		System.out.println("Bounds are: " + bounds[0] + " to " + bounds[1]);
+		return bounds;
 	}
 }
