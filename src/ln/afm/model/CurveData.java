@@ -691,7 +691,11 @@ public class CurveData {
 		if(last <= start) //If the last NaN occurs after the data limit
 		{
 			last = dataMatrix.numRows;
-			AfmDisplay.infoBox("Gel size error. Reverting to complete usage.", "ERROR");
+			if(!suppressErrors)
+			{
+				AfmDisplay.infoBox("Gel size error.", "ERROR");
+			}
+			return new XYSeriesCollection();
 		}
 		if(start == (dataMatrix.numRows - 1))
 		{

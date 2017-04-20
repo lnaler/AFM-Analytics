@@ -169,7 +169,7 @@ public class AfmDisplay{
 		frmAfmanalytics.setSize(800, 600);
 		frmAfmanalytics.setLocationRelativeTo(null);
 		frmAfmanalytics.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frmAfmanalytics.getContentPane().setLayout(new MigLayout("", "[140.00px:137.00px,grow][95.00px:95.00px,grow][49.00px:49.00px][72.00px:84.00px][30px:50.00px][30px:17.00px][72.00px:72.00px][][72.00px:72.00px,grow][35px:35.00px][][30px:30px][30px:30px]", "[28px:28px][28px:28px][28px:28px][28px:28px][28px:28px][28px:28px][28px:28px][28:28][28px:28px][15px:15.00px][28px:28px,grow][][1:1:1][28px:28px,grow][28px:28px][28px:28px][28px:28px]"));
+		frmAfmanalytics.getContentPane().setLayout(new MigLayout("", "[140.00px:137.00px,grow][95.00px:95.00px,grow][49.00px:66.00px][44.00][72.00px:84.00px][30px:54.00px][30px:17.00px][72.00px:72.00px][72.00px:72.00px,grow][35px:35.00px][30px:30px][30px:30px]", "[28px:28px][28px:28px][28px:28px][28px:28px][28px:28px][28px:28px][28px:28px][28:28][28px:28px][15px:15.00px][28px:28px,grow][][1:1:1][28px:28px,grow][28px:28px][28px:28px][28px:28px]"));
 		//frmAfmanalytics.getContentPane().add(fxPanel, "flowy,cell 0 0 7 10,grow");
 		//FXPanels have to be on a separate thread. Initializing it now.
 		
@@ -192,7 +192,7 @@ public class AfmDisplay{
 		//frmAfmanalytics.getContentPane().add(chartPanel, "cell 7 0 5 10,grow");
 		
 		JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, fxPanel, chartPanel);
-		frmAfmanalytics.getContentPane().add(splitPane, "cell 0 0 13 11,grow");
+		frmAfmanalytics.getContentPane().add(splitPane, "cell 0 0 12 11,grow");
 		splitPane.setOneTouchExpandable(true);
 		splitPane.setDividerLocation(400);
 		
@@ -250,7 +250,7 @@ public class AfmDisplay{
 		JButton btnClearChart = new JButton("Clear Chart");
 		btnClearChart.setEnabled(false);
 		btnClearChart.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 18));
-		frmAfmanalytics.getContentPane().add(btnClearChart, "cell 5 13 2 1,growx");
+		frmAfmanalytics.getContentPane().add(btnClearChart, "cell 6 13 2 1,growx");
 		btnClearChart.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent arg0) {
@@ -268,7 +268,11 @@ public class AfmDisplay{
 			public void mouseClicked(MouseEvent arg0) {
 				double[] inputs = getInputs();
 				manager.setParameters(inputs, limitZ);
-				chartPanel.setChart(manager.run(goodFit));
+				if(!automated)
+				{
+					System.out.println("Manual");
+					chartPanel.setChart(manager.run(goodFit));
+				}
 				if(automated)
 				{
 					System.out.println("Automated!");
@@ -276,7 +280,6 @@ public class AfmDisplay{
 				}
 				updateResults(manager.getResults());
 				btnClearChart.setEnabled(true);
-				
 			}
 		});
 //		btnRun.addActionListener(new ActionListener() {
@@ -293,6 +296,29 @@ public class AfmDisplay{
 //            }
 //
 //        });
+		
+		JButton btnRunAll = new JButton("Run All");
+		btnRunAll.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent arg0) {
+				System.out.println("Batch!");
+				for(int i=0;i < listModel.size();i++)
+				{
+					manager.setCurrentFile(i);
+					manager.setSmoothGraphInt(smoothGraphInt);
+					manager.viewRawGraph();
+					double[] inputs = getInputs();
+					manager.setParameters(inputs, limitZ);
+					manager.autoRun(goodFit);
+					//updateResults(manager.getResults());
+				}
+				
+				btnClearChart.setEnabled(true);
+				btnClearData.setEnabled(true);
+			}
+		});
+		btnRunAll.setFont(new Font("Tahoma", Font.PLAIN, 18));
+		frmAfmanalytics.getContentPane().add(btnRunAll, "cell 4 13 2 1");
 		
 		//This is where we keep our files, and keep track of which one(s) are selected
 		listModel = new DefaultListModel<String>();
@@ -342,7 +368,7 @@ public class AfmDisplay{
 		//Browses to and reads in a selected file
 		JButton btnBrowse = new JButton("  Browse  ");
 		btnBrowse.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 18));
-		frmAfmanalytics.getContentPane().add(btnBrowse, "cell 11 13 2 1,growx");
+		frmAfmanalytics.getContentPane().add(btnBrowse, "cell 10 13 2 1,growx");
 		btnBrowse.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent arg0) {
@@ -436,7 +462,7 @@ public class AfmDisplay{
 		txtSlope.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 18));
 		txtSlope.setBorder(BorderFactory.createEmptyBorder());
 		txtSlope.setText("Slope: ");
-		frmAfmanalytics.getContentPane().add(txtSlope, "cell 3 14 3 1,growx");
+		frmAfmanalytics.getContentPane().add(txtSlope, "cell 3 14 4 1,growx");
 		txtSlope.setColumns(10);
 		
 		//Results field for exponent.
@@ -446,13 +472,13 @@ public class AfmDisplay{
 		txtExp.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 18));
 		txtExp.setText("Exp:");
 		txtExp.setBorder(BorderFactory.createEmptyBorder());
-		frmAfmanalytics.getContentPane().add(txtExp, "cell 6 14,growx");
+		frmAfmanalytics.getContentPane().add(txtExp, "cell 7 14,growx");
 		txtExp.setColumns(10);
 		
 		JScrollPane scrollPane = new JScrollPane(fileList);
 		scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 		scrollPane.setViewportBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
-		frmAfmanalytics.getContentPane().add(scrollPane, "cell 8 14 5 3,grow");
+		frmAfmanalytics.getContentPane().add(scrollPane, "cell 8 14 4 3,grow");
 		
 		ButtonGroup fitRadButtons = new ButtonGroup();
 		zLimit = 20d;
@@ -499,7 +525,7 @@ public class AfmDisplay{
 		txtRsquared.setEditable(false);
 		txtRsquared.setText("R-Squared:");
 		txtRsquared.setBorder(BorderFactory.createEmptyBorder());
-		frmAfmanalytics.getContentPane().add(txtRsquared, "cell 3 15 4 1,growx");
+		frmAfmanalytics.getContentPane().add(txtRsquared, "cell 3 15 5 1,growx");
 		txtRsquared.setColumns(10);
 		
 		//Do we want to automatically run without Z0 input? No. Not yet.
@@ -605,7 +631,7 @@ public class AfmDisplay{
 		txtYoungsModulus.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 18));
 		txtYoungsModulus.setText("Young's Modulus: ");
 		txtYoungsModulus.setBorder(BorderFactory.createEmptyBorder());
-		frmAfmanalytics.getContentPane().add(txtYoungsModulus, "cell 3 16 4 1,grow");
+		frmAfmanalytics.getContentPane().add(txtYoungsModulus, "cell 3 16 5 1,grow");
 		txtYoungsModulus.setColumns(10);
 		
 		//The following section is menu bar functionality

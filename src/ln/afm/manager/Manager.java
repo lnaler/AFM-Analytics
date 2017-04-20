@@ -487,7 +487,7 @@ public class Manager {
 	
 	public double getImpact(boolean goodFit)
 	{
-		GeneticIndentFinder gif = new GeneticIndentFinder(100, allData.get(currentData));
+		GeneticIndentFinder gif = new GeneticIndentFinder(50, allData.get(currentData));
 		gif.run();
 		return gif.getIndent();
 	}

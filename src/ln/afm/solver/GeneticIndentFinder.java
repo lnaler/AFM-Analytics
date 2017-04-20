@@ -342,7 +342,7 @@ public class GeneticIndentFinder{
 			}
 		}
 		error = error/n;
-		if(Double.isNaN(error))
+		if(Double.isNaN(error) || n < 5)
 		{
 			//System.out.println("Whoa!");
 			error = Double.POSITIVE_INFINITY;
